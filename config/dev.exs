@@ -23,6 +23,7 @@ config :meepg, Meepg.Endpoint,
       ~r{web/templates/.*(eex)$}
     ]
   ],
+  # Simon
   watchers: [node: ["node_modules/gulp/bin/gulp.js", "watch"]]
 
 # Do not include metadata nor timestamps in development logs

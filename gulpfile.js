@@ -11,22 +11,24 @@ var elm = require('gulp-elm');
  */
 
 var elmPaths = [
- 'web/elm/**/*.elm'
+    'web/elm/*.elm',
+    'web/elm/**/*.elm'
 ];
 var elmMain = 'web/elm/Main.elm'
 
 gulp.task('elm-init', elm.init);
 
 gulp.task('elm', ['elm-init'], function() {
- // By explicitly handling errors, we prevent Gulp crashing when compile fails
- function onErrorHandler(err) {
-     console.log(err.message);
- }
- return gulp.src(elmPaths)             // "./src/Main.elm"
-     .pipe(elm())
-     .on('error', onErrorHandler)
-	//  .pipe(gulpif(production, uglify()) )   // uglify
-     .pipe(gulp.dest('priv/static/js'));
+    // By explicitly handling errors, we prevent Gulp crashing when compile fails
+    function onErrorHandler(err) {
+        console.log(err.message);
+    }
+
+    return gulp.src(elmMain)             // "./src/Main.elm"
+        .pipe(elm())
+        .on('error', onErrorHandler)
+        //  .pipe(gulpif(production, uglify()) )   // uglify
+        .pipe(gulp.dest('priv/static/js'));
 })
 
 // ******
@@ -45,10 +47,10 @@ var jsBeforePaths = [
 ];
 
 var jsAfterPaths = [
-  'deps/phoenix/priv/static/phoenix.js',
-  'deps/phoenix_html/priv/static/phoenix_html.js',
-  'web/static/js/**/*.js*',
-  'web/static/vendor/**/*.js*',
+    'deps/phoenix/priv/static/phoenix.js',
+    'deps/phoenix_html/priv/static/phoenix_html.js',
+    'web/static/js/**/*.js*',
+    'web/static/vendor/**/*.js*',
 ];
 
 var otherAssetPaths = [
@@ -110,11 +112,12 @@ gulp.task('assets', function() {
 });
 
 gulp.task('default', [
-  'assets',
-  'css-vendor',
-  'css-app',
-  'js-before',
-  'js-after',
+    'assets',
+    'css-vendor',
+    'css-app',
+    'js-before',
+    'js-after',
+    'elm'
 ]);
 
 
@@ -122,19 +125,18 @@ gulp.task('default', [
 
 gulp.task('watch', ['elm', 'css-app'], function() {
 
-  // CSS / SASS
-  gulp.watch(vendorCssPaths, ['css-vendor']).on('change', reportChange);
-  gulp.watch(appCssPaths, ['css-app']).on('change', reportChange);
+    // CSS / SASS
+    gulp.watch(vendorCssPaths, ['css-vendor']).on('change', reportChange);
+    gulp.watch(appCssPaths, ['css-app']).on('change', reportChange);
 
-  // ELM
-  gulp.watch(elmPaths, ['elm']).on('change', reportChange);
-  // JS
-  gulp.watch(jsBeforePaths, ['js-before']).on('change', reportChange);
-  gulp.watch(jsAfterPaths, ['js-after']).on('change', reportChange);
+    // ELM
+    gulp.watch(elmPaths, ['elm']).on('change', reportChange);
+    // JS
+    gulp.watch(jsBeforePaths, ['js-before']).on('change', reportChange);
+    gulp.watch(jsAfterPaths, ['js-after']).on('change', reportChange);
 
-  // Other assets
-  gulp.watch([
-    'web/static/assets/**/*'
-  ], ['assets']).on('change', reportChange);
-
+    // Other assets
+    gulp.watch([
+        'web/static/assets/**/*'
+    ], ['assets']).on('change', reportChange);
 });

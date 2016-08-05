@@ -2,7 +2,7 @@ defmodule Meepg.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", Meepg.RoomChannel
+  channel "room:*", Meepg.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
