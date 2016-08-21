@@ -1,11 +1,17 @@
 module Login exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html.Attributes exposing (class, type')
+import Html.Events exposing (onClick, onSubmit)
 
 import Material
+import Material.Grid as Grid exposing (grid, cell, size, offset, Device(..))
 import Material.Textfield as Textfield
+import Material.Card as Card
+import Material.Color as Color
+import Material.Button as Button
+import Material.Elevation exposing (..)
+import Material.Options as Options
 import Material.Helpers
 
 type alias Model =
@@ -14,36 +20,60 @@ type alias Model =
     }
 
 init = Model "" Material.model
+init' s =
+    Model s Material.model
 
 type Msg
     = UpdateUserName String
     | Submit Model
     | Mdl (Material.Msg Msg)
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update message model =
+-- type alias Config =
+--     { mdlMessage : Material.Msg Msg -> msg }
+
+update : msg -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
+update submitMsg message model =
     case message of
         UpdateUserName un ->
-            { model | username = un } ! []
+            ( { model | username = un }, Cmd.none, Nothing )
+        Submit _ ->
+            ( model, Cmd.none, Just submitMsg )
         Mdl msg ->
-           Material.update msg model
-        _ ->
-            model ! []
+            let (m, c) = Material.update msg model
+            in (m, c, Nothing)
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class "login" ]
-        [ Textfield.render Mdl [0] model.mdl
-            [ Textfield.label "Chat name"
-            , Textfield.floatingLabel
-            , Textfield.value model.username
-            , Textfield.onInput UpdateUserName
+    grid []
+        [ cell
+            [ size All 6
+            , offset All 3
+            , Grid.align Grid.Middle
             ]
-        -- , input
-        --     [ onInput UpdateUserName ]
-        --     [ text model ]
-        , button
-            [ onClick (Submit model) ]
-            [ text "Submit" ]
+            [ loginCard model ]
+        ]
+
+loginCard model =
+    Card.view
+        [ e4 ]
+        [ Card.title
+            [ Color.background <| Color.color Color.Indigo Color.S600 ]
+            [ h2 [] [ text "Login" ] ]
+        , Card.text []
+            [ text "Enter a username"
+            , Html.form
+                [ onSubmit (Submit model) ]
+                [ Textfield.render Mdl [0] model.mdl
+                    [ Textfield.label "Chat name"
+                    , Textfield.floatingLabel
+                    , Textfield.value model.username
+                    , Textfield.onInput UpdateUserName
+                    ]
+                , Button.render Mdl [1] model.mdl
+                    [ Button.raised
+                    , Button.ripple
+                    ]
+                    [ text "Join Chat"]
+                ]
+            ]
         ]

@@ -2,7 +2,7 @@ module App exposing (..)
 
 import Html exposing (..)
 import Html.App as Html
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 
 import Http
@@ -11,17 +11,23 @@ import Json.Encode as E
 
 import Task
 
+import Material
+import Material.Typography as Typo
+import Material.Grid as Grid exposing (..)
+-- import Material.Options as Options
+import Material.Layout as Layout
+
 import Phoenix.Socket as Socket exposing (withDebug)
 import Phoenix.Channel as Channel
-import Phoenix.Push
+import Phoenix.Push as Push
 
 import Login
 import Chat
 
 -- CONSTANTS
 
-serverUrl = "http://localhost:4000/api/default"
-socketUrl = "ws://localhost:4000/socket/websocket"
+serverUrl = "/api/default"
+socketUrl = "ws://192.168.0.10:4000/socket/websocket"
 
 -- MODEL
 type ViewType
@@ -34,23 +40,33 @@ type alias Model =
     , chat : Chat.Model
     , debugMsg : String
     , phxSocket : Socket.Socket Msg
+    , mdl : Material.Model
     }
 
 init : (Model, Cmd Msg)
 init =
     ( Model
-        Login Login.init Chat.init "Loading..."
+        Login Login.init Chat.init ""
         (Socket.init socketUrl |> withDebug)
-    , loadData
+        Material.model
+    , Cmd.none
     )
+    -- Model
+    --     Login Login.init Chat.init "Loading..."
+    --     (Socket.init socketUrl |> withDebug)
+    --     Material.model
+    -- |> joinChat
 
 -- UPDATE
 
 type Msg
-    = Join
     -- Components
-    | LoginMsg Login.Msg
+    = LoginMsg Login.Msg
+    | Join
+    -- Chat
     | ChatMsg Chat.Msg
+    | Send
+
     -- Http
     | FetchSucceed String
     | FetchFail Http.Error
@@ -60,31 +76,53 @@ type Msg
     | ReceiveChatMessage E.Value
     | ShowJoinedMessage String
     | ReceiveReply E.Value
+    -- Mdl
+    | Mdl (Material.Msg Msg)
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update message model =
     case message of
         LoginMsg msg ->
-            let (m, e) = Login.update msg model.login
+            let
+                (m, c1, maybeMsg) = Login.update Join msg model.login
+                newModel = { model | login = m }
+                c1' = Cmd.map LoginMsg c1
             in
-            ( { model | login = m }
-            , Cmd.map LoginMsg e
+            case maybeMsg of
+                Just msg' ->
+                    let (newModel', c2) = update msg' newModel
+                    in (newModel', Cmd.batch [c1', c2])
+                _ ->
+                    (newModel, c1')
+        Join ->
+            joinChat model
+        ChatMsg msg ->
+            let
+                (m, c1, maybeMsg) = Chat.update Send msg model.chat
+                newModel = { model | chat = m }
+                c1' = Cmd.map ChatMsg c1
+            in
+            case maybeMsg of
+                Just msg' ->
+                    let (newModel', c2) = update msg' newModel
+                    in (newModel', Cmd.batch [c1', c2])
+                _ ->
+                    (newModel, c1')
+        Send ->
+            let
+                payload = E.object [ ("body", E.string model.chat.newMessage) ]
+                push =
+                    Push.init "new_msg" "room:lobby"
+                    |> Push.withPayload payload
+                (socket', socketCmd) =
+                    Socket.push push model.phxSocket
+            in
+            ( { model | phxSocket = socket' }
+            , Cmd.map PhoenixMsg socketCmd
             )
-            -- case msg of
-            --     Login.Submit username ->
-            --         let
-            --             payload = E.object [ ("username", E.string username) ]
-            --             channel =
-            --                 Channel.init "room:lobby"
-            --                 |> Channel.withPayload payload
-            --                 |> Channel.onJoin (always (ShowJoinedMessage "rooms:lobby"))
-            --             (socket', cmd) = Socket.join channel model.phxSocket
-            --         in
-            --         ( { model | phxSocket = socket' }
-            --         , Cmd.map PhoenixMsg cmd
-            --         )
-            --     _ ->
-            --         { model | login = Login.update msg model.login } ! []
+        -- ReceiveChatMessage jsonValue ->
+        --     update (ChatMsg Chat.NewMessage jsonValue) model
         FetchSucceed str ->
             { model | debugMsg = str } ! []
         FetchFail err ->
@@ -94,7 +132,9 @@ update message model =
                 ( phxSocket, phxCmd ) =
                     model.phxSocket
                     |> Socket.on "phx_reply" "room:lobby" ReceiveReply
-                    |> Socket.on "new_msg" "room:lobby" ReceiveChatMessage
+                    |> Socket.on "new_msg" "room:lobby" (ChatMsg << Chat.NewMessage)
+                    |> Socket.on "new_member" "room:lobby" (ChatMsg << Chat.NewMember)
+                    |> Socket.on "lost_member" "room:lobby" (ChatMsg << Chat.LostMember)
                     |> Socket.update msg
             in
             ( { model | phxSocket = phxSocket }
@@ -104,24 +144,58 @@ update message model =
             { model | viewType = Chat } ! []
         _ ->
             { model | debugMsg = toString message } ! []
--- VIEW
 
+
+joinChat : Model -> (Model, Cmd Msg)
+joinChat model =
+    let
+        payload = E.object [ ("username", E.string model.login.username) ]
+        channel =
+            Channel.init "room:lobby"
+            |> Channel.withPayload payload
+            |> Channel.onJoin (always (ShowJoinedMessage "room:lobby"))
+        (socket', cmd) = Socket.join channel model.phxSocket
+    in
+    ( { model | phxSocket = socket' }
+    , Cmd.map PhoenixMsg cmd
+    )
+
+-- VIEW
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ h1 [] [ text "Simon's Elm-Phoenix Chat" ]
-        , case model.viewType of
+    Layout.render Mdl model.mdl
+        [ Layout.fixedHeader
+        ]
+        { header =
+            [ h1
+                [ style [("padding", "2rem")] ]
+                [ text "Simon's Elm-Phoenix Chat" ]
+            ]
+        , drawer = []
+        , tabs = ([], [])
+        , main = [ viewBody model ]
+        }
+
+viewBody : Model -> Html Msg
+viewBody model =
+    div [ class "main-container" ]
+        [ case model.viewType of
             Login ->
                 Login.view model.login |> Html.map LoginMsg
             Chat ->
-                Chat.view model.chat |> Html.map ChatMsg
-        , div []
-            [ text <| toString model.debugMsg ]
+                viewApp model
+        , text model.debugMsg
         ]
 
+viewApp model =
+    grid []
+        [ cell
+            [ size All 6
+            , stretch
+            ] [ Chat.view model.chat |> Html.map ChatMsg ]
+        , cell
+            [ size All 6
+            , stretch
+            ] [ text "tbc" ]
+        ]
 -- Commands
-
-loadData : Cmd Msg
-loadData =
-    Http.get ("data" := Json.string) serverUrl
-    |> Task.perform FetchFail FetchSucceed
