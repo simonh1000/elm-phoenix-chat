@@ -4,9 +4,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import Json.Decode exposing (decodeValue, Value)
+
 import List as L
 import Date exposing (Date)
-import Json.Decode exposing (..)
 import Platform.Cmd exposing (Cmd)
 
 import Material
@@ -15,6 +16,8 @@ import Material.Textfield as Textfield
 import Material.Button as Button
 import Material.List as MList
 import Material.Helpers exposing (..)
+
+import Decoders exposing (..)
 
 type alias Model =
     { messages : Messages
@@ -47,7 +50,7 @@ update : msg -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
 update sendMsg message model =
     case message of
         NewMessage jsonMessage ->
-            case decodeValue messageDecoder jsonMessage of
+            case decodeValue (messageDecoder Message) jsonMessage of
                 Result.Ok newMsg ->
                     ( { model
                             | messages = newMsg :: model.messages
@@ -58,20 +61,20 @@ update sendMsg message model =
                     let _ = Debug.log "error" err
                     in (model, Cmd.none, Nothing)
         NewMember jsonMessage ->
-            case decodeValue messageDecoder jsonMessage of
-                Result.Ok newMember ->
-                    let newMessage = Message "system" <| newMember.userName ++ " joined"
+            case decodeValue newMemberDecoder jsonMessage of
+                Result.Ok (newUsername, members) ->
+                    let newMessage = Message "system" <| newUsername ++ " joined"
                     in
                     ( { model
                             | messages = newMessage :: model.messages
-                            , members = newMember.userName :: model.members }
+                            , members = members }
                     , Cmd.none, Nothing
                     )
                 Result.Err err ->
                     let _ = Debug.log "error" err
                     in (model, Cmd.none, Nothing)
         LostMember jsonMessage ->
-            case decodeValue messageDecoder jsonMessage of
+            case decodeValue (messageDecoder Message) jsonMessage of
                 Result.Ok lostMember ->
                     let newMessage = Message "system" <| lostMember.userName ++ " left"
                     in
@@ -94,8 +97,8 @@ update sendMsg message model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ model.messages |> L.reverse |> L.map viewMessage |> div []
+    div [ id "chat" ]
+        [ model.messages |> L.reverse |> L.map viewMessage |> div [ class "messages" ]
         , text <| toString model.members
         , inputView model
         ]
@@ -111,7 +114,9 @@ viewMessage msg =
 
 inputView model =
     Html.form
-        [ onSubmit Send ]
+        [ onSubmit Send
+        , class "message-input"
+        ]
         [ Textfield.render Mdl [0] model.mdl
             [ Textfield.label "New message"
             , Textfield.floatingLabel
@@ -127,8 +132,3 @@ inputView model =
             ]
             [ text "Send"]
         ]
-
-messageDecoder =
-    object2 Message
-        ("username" := string)
-        (oneOf [ "body" := string, succeed ""])

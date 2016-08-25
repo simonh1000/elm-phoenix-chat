@@ -1,3 +1,2 @@
-<script>
-  var elm = Elm.Main.fullscreen();
-</script>
+<!script src="/soundplayer.js" charset="utf-8"></script>
+<script src="/js/app-after.js" charset="utf-8"></script>

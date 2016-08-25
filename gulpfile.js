@@ -3,32 +3,31 @@
 var gulp = require('gulp');
 var sass = require('gulp-sass');
 var concat = require('gulp-concat');
-var compress = require('gulp-yuicompressor');
+// var compress = require('gulp-yuicompressor');
 var elm = require('gulp-elm');
-
+var babel = require("gulp-babel");
 /*
  * E L M
  */
 
 var elmPaths = [
-    'web/elm/*.elm',
-    'web/elm/**/*.elm'
+ 'web/elm/**/*.elm'
 ];
 var elmMain = 'web/elm/Main.elm'
 
 gulp.task('elm-init', elm.init);
 
 gulp.task('elm', ['elm-init'], function() {
-    // By explicitly handling errors, we prevent Gulp crashing when compile fails
-    function onErrorHandler(err) {
-        console.log(err.message);
-    }
-
-    return gulp.src(elmMain)             // "./src/Main.elm"
-        .pipe(elm())
-        .on('error', onErrorHandler)
-        //  .pipe(gulpif(production, uglify()) )   // uglify
-        .pipe(gulp.dest('priv/static/js'));
+ // By explicitly handling errors, we prevent Gulp crashing when compile fails
+ function onErrorHandler(err) {
+     console.log(err.message);
+ }
+ // return gulp.src(elmPaths)             // "./src/Main.elm"
+ return gulp.src(elmMain)             // "./src/Main.elm"
+     .pipe(elm())
+     .on('error', onErrorHandler)
+	//  .pipe(gulpif(production, uglify()) )   // uglify
+     .pipe(gulp.dest('priv/static/js'));
 })
 
 // ******
@@ -47,10 +46,10 @@ var jsBeforePaths = [
 ];
 
 var jsAfterPaths = [
-    'deps/phoenix/priv/static/phoenix.js',
-    'deps/phoenix_html/priv/static/phoenix_html.js',
-    'web/static/js/**/*.js*',
-    'web/static/vendor/**/*.js*',
+  'deps/phoenix/priv/static/phoenix.js',
+  'deps/phoenix_html/priv/static/phoenix_html.js',
+  'web/static/js/**/*.js*',
+  'web/static/vendor/**/*.js*',
 ];
 
 var otherAssetPaths = [
@@ -68,9 +67,9 @@ gulp.task('css-vendor', function() {
   return gulp
     .src(vendorCssPaths)
     .pipe(concat('app-vendor.css'))
-    .pipe(compress({
-      type: 'css'
-    }))
+    // .pipe(compress({
+    //   type: 'css'
+    // }))
     .pipe(gulp.dest('priv/static/css'));
 });
 
@@ -79,9 +78,9 @@ gulp.task('css-app', function() {
     .src(appCssPaths)
     .pipe(concat('app.scss'))
     .pipe(sass())
-    .pipe(compress({
-      type: 'css'
-    }))
+    // .pipe(compress({
+    //   type: 'css'
+    // }))
     .pipe(gulp.dest('priv/static/css'));
 });
 
@@ -98,10 +97,13 @@ gulp.task('js-before', function() {
 gulp.task('js-after', function() {
   return gulp
     .src(jsAfterPaths)
+    // .pipe(sourcemaps.init())
+    .pipe(babel())
     .pipe(concat('app-after.js'))
-    .pipe(compress({
-      type: 'js'
-    }))
+    // .pipe(sourcemaps.write("."))
+    // .pipe(compress({
+    //   type: 'js'
+    // }))
     .pipe(gulp.dest('priv/static/js'));
 });
 
@@ -112,12 +114,11 @@ gulp.task('assets', function() {
 });
 
 gulp.task('default', [
-    'assets',
-    'css-vendor',
-    'css-app',
-    'js-before',
-    'js-after',
-    'elm'
+  'assets',
+  'css-vendor',
+  'css-app',
+  'js-before',
+  'js-after',
 ]);
 
 
@@ -125,18 +126,19 @@ gulp.task('default', [
 
 gulp.task('watch', ['elm', 'css-app'], function() {
 
-    // CSS / SASS
-    gulp.watch(vendorCssPaths, ['css-vendor']).on('change', reportChange);
-    gulp.watch(appCssPaths, ['css-app']).on('change', reportChange);
+  // CSS / SASS
+  gulp.watch(vendorCssPaths, ['css-vendor']).on('change', reportChange);
+  gulp.watch(appCssPaths, ['css-app']).on('change', reportChange);
 
-    // ELM
-    gulp.watch(elmPaths, ['elm']).on('change', reportChange);
-    // JS
-    gulp.watch(jsBeforePaths, ['js-before']).on('change', reportChange);
-    gulp.watch(jsAfterPaths, ['js-after']).on('change', reportChange);
+  // ELM
+  gulp.watch(elmPaths, ['elm']).on('change', reportChange);
+  // JS
+  gulp.watch(jsBeforePaths, ['js-before']).on('change', reportChange);
+  gulp.watch(jsAfterPaths, ['js-after']).on('change', reportChange);
 
-    // Other assets
-    gulp.watch([
-        'web/static/assets/**/*'
-    ], ['assets']).on('change', reportChange);
+  // Other assets
+  gulp.watch([
+    'web/static/assets/**/*'
+  ], ['assets']).on('change', reportChange);
+
 });

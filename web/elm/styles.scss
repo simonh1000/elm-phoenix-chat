@@ -19,3 +19,22 @@ li span {
         color: brown;
     }
 }
+
+#chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    .messages {
+        flex-grow: 2;
+    }
+}
+
+// Overrides
+.mdl-layout__content {
+    display: flex;
+    flex-direction: column;
+    .mdl-grid {
+        width: 100%;
+        flex-grow: 2;
+    }
+}

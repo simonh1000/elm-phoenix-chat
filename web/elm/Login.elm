@@ -14,6 +14,8 @@ import Material.Elevation exposing (..)
 import Material.Options as Options
 import Material.Helpers
 
+import Decoders exposing (..)
+
 type alias Model =
     { username : String
     , mdl : Material.Model
@@ -25,19 +27,19 @@ init' s =
 
 type Msg
     = UpdateUserName String
-    | Submit Model
+    | Submit
     | Mdl (Material.Msg Msg)
 
 -- type alias Config =
 --     { mdlMessage : Material.Msg Msg -> msg }
 
-update : msg -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
+update : (String -> msg) -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
 update submitMsg message model =
     case message of
         UpdateUserName un ->
             ( { model | username = un }, Cmd.none, Nothing )
-        Submit _ ->
-            ( model, Cmd.none, Just submitMsg )
+        Submit ->
+            ( model, Cmd.none, Just (submitMsg model.username))
         Mdl msg ->
             let (m, c) = Material.update msg model
             in (m, c, Nothing)
@@ -62,7 +64,7 @@ loginCard model =
         , Card.text []
             [ text "Enter a username"
             , Html.form
-                [ onSubmit (Submit model) ]
+                [ onSubmit Submit ]
                 [ Textfield.render Mdl [0] model.mdl
                     [ Textfield.label "Chat name"
                     , Textfield.floatingLabel

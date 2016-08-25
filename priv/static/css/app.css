@@ -1,1 +1,23 @@
-.main-container{padding-left:8%;padding-right:8%}li span.user-name{font-weight:800}li span.system{color:brown}
+.main-container {
+  padding-left: 8%;
+  padding-right: 8%; }
+
+li span.user-name {
+  font-weight: 800; }
+
+li span.system {
+  color: brown; }
+
+#chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%; }
+  #chat .messages {
+    flex-grow: 2; }
+
+.mdl-layout__content {
+  display: flex;
+  flex-direction: column; }
+  .mdl-layout__content .mdl-grid {
+    width: 100%;
+    flex-grow: 2; }

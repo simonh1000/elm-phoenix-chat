@@ -3,6 +3,7 @@ defmodule Meepg.UserSocket do
 
   ## Channels
   channel "room:*", Meepg.RoomChannel
+  # channel "sounds:*", Meepg.SoundsChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket

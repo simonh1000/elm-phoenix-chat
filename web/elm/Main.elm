@@ -5,8 +5,9 @@ import Phoenix.Socket
 
 import App exposing (..)
 
+main : Program String
 main =
-  Html.program
+  Html.programWithFlags
     { init = init
     , update = update
     , view = view

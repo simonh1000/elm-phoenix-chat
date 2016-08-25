@@ -9,6 +9,7 @@ defmodule Meepg do
     children = [
       # Start the endpoint when the application starts
       supervisor(Meepg.Endpoint, []),
+      supervisor(Meepg.UserList, [])
       # Here you could define other workers and supervisors as children
       # worker(Meepg.Worker, [arg1, arg2, arg3]),
     ]
