@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Json.Decode exposing (decodeValue, Value)
+import Json.Encode as E
 
 import List as L
 import Date exposing (Date)
@@ -18,6 +19,7 @@ import Material.List as MList
 import Material.Helpers exposing (..)
 
 import Decoders exposing (..)
+import Common exposing (..)
 
 type alias Model =
     { messages : Messages
@@ -38,38 +40,45 @@ type alias Message =
     }
 
 type Msg
-    = NewMessage Value
+    = JoinLobby Value
+    | NewMessage Value
     | NewMember Value
     | LostMember Value
     | Send
     | UpdateInput String
     | Mdl (Material.Msg Msg)
 
+-- type alias Config msg =
+--     { sendMsg : ... -> msg
+--     , errorMsg : String -> msg
+--     }
 
-update : msg -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
+update : (E.Value -> msg) -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
 update sendMsg message model =
     case message of
+        JoinLobby val ->
+            case decodeValue userNamesDecoder val of
+                Result.Ok members ->
+                    { model | members = members } |> nothing
+                Result.Err err ->
+                    model |> nothing
         NewMessage jsonMessage ->
             case decodeValue (messageDecoder Message) jsonMessage of
                 Result.Ok newMsg ->
-                    ( { model
+                    { model
                             | messages = newMsg :: model.messages
-                            , newMessage = "" }
-                    , Cmd.none, Nothing
-                    )
+                            , newMessage = "" } |> nothing
                 Result.Err err ->
                     let _ = Debug.log "error" err
-                    in (model, Cmd.none, Nothing)
+                    in model |> nothing
         NewMember jsonMessage ->
             case decodeValue newMemberDecoder jsonMessage of
                 Result.Ok (newUsername, members) ->
                     let newMessage = Message "system" <| newUsername ++ " joined"
                     in
-                    ( { model
+                    { model
                             | messages = newMessage :: model.messages
-                            , members = members }
-                    , Cmd.none, Nothing
-                    )
+                            , members = members } |> nothing
                 Result.Err err ->
                     let _ = Debug.log "error" err
                     in (model, Cmd.none, Nothing)
@@ -89,7 +98,8 @@ update sendMsg message model =
         UpdateInput s ->
             ({ model | newMessage = s}, Cmd.none, Nothing)
         Send ->
-            (model, Cmd.none, Just sendMsg)
+            let payload = E.object [ ("body", E.string model.newMessage) ]
+            in (model, Cmd.none, Just <| sendMsg payload)
         Mdl msg ->
             let (m, c) = Material.update msg model
             in (m, c, Nothing)

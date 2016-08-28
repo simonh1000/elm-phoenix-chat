@@ -1,8 +1,10 @@
 module Login exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, type')
+import Html.Attributes exposing (class, type', id)
 import Html.Events exposing (onClick, onSubmit)
+
+import Json.Encode as E
 
 import Material
 import Material.Grid as Grid exposing (grid, cell, size, offset, Device(..))
@@ -46,13 +48,16 @@ update submitMsg message model =
 
 view : Model -> Html Msg
 view model =
-    grid []
-        [ cell
-            [ size All 6
-            , offset All 3
-            , Grid.align Grid.Middle
+    div [ id "login" ]
+        [ grid [ ]
+            [ cell
+                [ size Desktop 6
+                , size Phone 12
+                , offset Desktop 3
+                -- , Grid.align Grid.Middle
+                ]
+                [ loginCard model ]
             ]
-            [ loginCard model ]
         ]
 
 loginCard model =
@@ -79,3 +84,6 @@ loginCard model =
                 ]
             ]
         ]
+
+encoder model =
+    E.object [ ("username", E.string model.username) ]

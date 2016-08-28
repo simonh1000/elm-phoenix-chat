@@ -1342,6 +1342,7 @@ function url() {
 //     new Audio("http://localhost:4000/sounds/guitar.mp3").play();
 // }
 
-function playSound() {
-    new Audio("http://192.168.0.10:4000/sounds/guitar.mp3").play();
+function playSound(s) {
+    console.log(s);
+    new Audio("http://192.168.0.10:4000/sounds/" + s + ".mp3").play();
 }

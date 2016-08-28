@@ -17,4 +17,8 @@ defmodule Meepg.UserList do
             Enum.filter(userlist, fn elem -> elem != user end)
         end)
     end
+
+    def get_users() do
+        Agent.get(__MODULE__, &(&1))
+    end
 end

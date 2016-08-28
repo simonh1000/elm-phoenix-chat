@@ -1,12 +1,15 @@
-.main-container {
-  padding-left: 8%;
-  padding-right: 8%; }
+header h1 {
+  padding: 0 15px; }
 
 li span.user-name {
   font-weight: 800; }
 
 li span.system {
   color: brown; }
+
+#login .mdl-cell {
+  display: flex;
+  justify-content: center; }
 
 #chat {
   display: flex;
@@ -15,9 +18,12 @@ li span.system {
   #chat .messages {
     flex-grow: 2; }
 
-.mdl-layout__content {
-  display: flex;
-  flex-direction: column; }
-  .mdl-layout__content .mdl-grid {
-    width: 100%;
-    flex-grow: 2; }
+@media screen and (min-device-width: 1200px) and (max-device-width: 1600px) and (-webkit-min-device-pixel-ratio: 1) {
+  header h1 {
+    padding: 2rem; }
+  .mdl-layout__content {
+    display: flex;
+    flex-direction: column; }
+    .mdl-layout__content .mdl-grid {
+      width: 100%;
+      flex-grow: 2; } }

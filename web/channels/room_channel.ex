@@ -8,7 +8,8 @@ defmodule Meepg.RoomChannel do
   def join("room:lobby", %{"username" => username}, socket) do
     # IO.inspect username
     send(self, :after_join)
-    {:ok, socket |> assign(:username, username)}
+    users = UserList.get_users()
+    {:ok, %{users: users}, socket |> assign(:username, username)}
   end
 
   def join("room:" <> _private_room_id, _params, _socket) do
@@ -36,10 +37,10 @@ defmodule Meepg.RoomChannel do
       {:noreply, socket}
     end
 
-  def handle_in("send_sound", %{"target" => target}, socket) do
-    #   IO.inspect("send_sound: " <> target)
-    #   broadcast ("sounds:" <> target), "play_sound", %{}
-      broadcast! socket, "play_sound", %{username: target, body: "guitar"}
+  def handle_in("send_sound", %{"target" => tgt, "soundfile" => sf}, socket) do
+      IO.inspect("send_sound")
+    #   broadcast! socket, "play_sound", %{username: tgt, body: sf}
+      Meepg.Endpoint.broadcast("user:"<>tgt, "send_sound", %{body: sf})
       {:noreply, socket}
     end
 

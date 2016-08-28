@@ -15501,7 +15501,8 @@ var _fbonetti$elm_phoenix_socket$Phoenix_Socket$listen = F2(
 				]));
 	});
 
-var _user$project$Decoders$userNameDecoder = _elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string);
+var _user$project$Decoders$receiveSoundDecoder = A2(_elm_lang$core$Json_Decode_ops[':='], 'body', _elm_lang$core$Json_Decode$string);
+var _user$project$Decoders$userNamesDecoder = _elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string);
 var _user$project$Decoders$newMemberDecoder = A3(
 	_elm_lang$core$Json_Decode$object2,
 	F2(
@@ -15509,7 +15510,7 @@ var _user$project$Decoders$newMemberDecoder = A3(
 			return {ctor: '_Tuple2', _0: v0, _1: v1};
 		}),
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'username', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'users', _user$project$Decoders$userNameDecoder));
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'users', _user$project$Decoders$userNamesDecoder));
 var _user$project$Decoders$messageDecoder$ = F2(
 	function (constructor, dec) {
 		return A3(
@@ -15531,6 +15532,17 @@ var _user$project$Decoders$messageDecoder = function (constructor) {
 				])));
 };
 
+var _user$project$Login$encoder = function (model) {
+	return _elm_lang$core$Json_Encode$object(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'username',
+				_1: _elm_lang$core$Json_Encode$string(model.username)
+			}
+			]));
+};
 var _user$project$Login$update = F3(
 	function (submitMsg, message, model) {
 		var _p0 = message;
@@ -15645,24 +15657,37 @@ var _user$project$Login$loginCard = function (model) {
 };
 var _user$project$Login$view = function (model) {
 	return A2(
-		_debois$elm_mdl$Material_Grid$grid,
+		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
-			[]),
+			[
+				_elm_lang$html$Html_Attributes$id('login')
+			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				A2(
-				_debois$elm_mdl$Material_Grid$cell,
+				_debois$elm_mdl$Material_Grid$grid,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
-						A2(_debois$elm_mdl$Material_Grid$offset, _debois$elm_mdl$Material_Grid$All, 3),
-						_debois$elm_mdl$Material_Grid$align(_debois$elm_mdl$Material_Grid$Middle)
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_user$project$Login$loginCard(model)
+						A2(
+						_debois$elm_mdl$Material_Grid$cell,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$Desktop, 6),
+								A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$Phone, 12),
+								A2(_debois$elm_mdl$Material_Grid$offset, _debois$elm_mdl$Material_Grid$Desktop, 3)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_user$project$Login$loginCard(model)
+							]))
 					]))
 			]));
+};
+
+var _user$project$Common$nothing = function (m) {
+	return {ctor: '_Tuple3', _0: m, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
 };
 
 var _user$project$Chat$viewMessage = function (msg) {
@@ -15723,60 +15748,62 @@ var _user$project$Chat$update = F3(
 	function (sendMsg, message, model) {
 		var _p0 = message;
 		switch (_p0.ctor) {
+			case 'JoinLobby':
+				var _p1 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$userNamesDecoder, _p0._0);
+				if (_p1.ctor === 'Ok') {
+					return _user$project$Common$nothing(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{members: _p1._0}));
+				} else {
+					return _user$project$Common$nothing(model);
+				}
 			case 'NewMessage':
-				var _p1 = A2(
+				var _p2 = A2(
 					_elm_lang$core$Json_Decode$decodeValue,
 					_user$project$Decoders$messageDecoder(_user$project$Chat$Message),
 					_p0._0);
-				if (_p1.ctor === 'Ok') {
-					return {
-						ctor: '_Tuple3',
-						_0: _elm_lang$core$Native_Utils.update(
+				if (_p2.ctor === 'Ok') {
+					return _user$project$Common$nothing(
+						_elm_lang$core$Native_Utils.update(
 							model,
 							{
-								messages: A2(_elm_lang$core$List_ops['::'], _p1._0, model.messages),
+								messages: A2(_elm_lang$core$List_ops['::'], _p2._0, model.messages),
 								newMessage: ''
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none,
-						_2: _elm_lang$core$Maybe$Nothing
-					};
+							}));
 				} else {
-					var _p2 = A2(_elm_lang$core$Debug$log, 'error', _p1._0);
-					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
+					var _p3 = A2(_elm_lang$core$Debug$log, 'error', _p2._0);
+					return _user$project$Common$nothing(model);
 				}
 			case 'NewMember':
-				var _p3 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$newMemberDecoder, _p0._0);
-				if (_p3.ctor === 'Ok') {
+				var _p4 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$newMemberDecoder, _p0._0);
+				if (_p4.ctor === 'Ok') {
 					var newMessage = A2(
 						_user$project$Chat$Message,
 						'system',
-						A2(_elm_lang$core$Basics_ops['++'], _p3._0._0, ' joined'));
-					return {
-						ctor: '_Tuple3',
-						_0: _elm_lang$core$Native_Utils.update(
+						A2(_elm_lang$core$Basics_ops['++'], _p4._0._0, ' joined'));
+					return _user$project$Common$nothing(
+						_elm_lang$core$Native_Utils.update(
 							model,
 							{
 								messages: A2(_elm_lang$core$List_ops['::'], newMessage, model.messages),
-								members: _p3._0._1
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none,
-						_2: _elm_lang$core$Maybe$Nothing
-					};
+								members: _p4._0._1
+							}));
 				} else {
-					var _p4 = A2(_elm_lang$core$Debug$log, 'error', _p3._0);
+					var _p5 = A2(_elm_lang$core$Debug$log, 'error', _p4._0);
 					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
 				}
 			case 'LostMember':
-				var _p5 = A2(
+				var _p6 = A2(
 					_elm_lang$core$Json_Decode$decodeValue,
 					_user$project$Decoders$messageDecoder(_user$project$Chat$Message),
 					_p0._0);
-				if (_p5.ctor === 'Ok') {
-					var _p6 = _p5._0;
+				if (_p6.ctor === 'Ok') {
+					var _p7 = _p6._0;
 					var newMessage = A2(
 						_user$project$Chat$Message,
 						'system',
-						A2(_elm_lang$core$Basics_ops['++'], _p6.userName, ' left'));
+						A2(_elm_lang$core$Basics_ops['++'], _p7.userName, ' left'));
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -15788,14 +15815,14 @@ var _user$project$Chat$update = F3(
 									F2(
 										function (x, y) {
 											return !_elm_lang$core$Native_Utils.eq(x, y);
-										})(_p6.userName),
+										})(_p7.userName),
 									model.members)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none,
 						_2: _elm_lang$core$Maybe$Nothing
 					};
 				} else {
-					var _p7 = A2(_elm_lang$core$Debug$log, 'error', _p5._0);
+					var _p8 = A2(_elm_lang$core$Debug$log, 'error', _p6._0);
 					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
 				}
 			case 'UpdateInput':
@@ -15808,16 +15835,26 @@ var _user$project$Chat$update = F3(
 					_2: _elm_lang$core$Maybe$Nothing
 				};
 			case 'Send':
+				var payload = _elm_lang$core$Json_Encode$object(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{
+							ctor: '_Tuple2',
+							_0: 'body',
+							_1: _elm_lang$core$Json_Encode$string(model.newMessage)
+						}
+						]));
 				return {
 					ctor: '_Tuple3',
 					_0: model,
 					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Just(sendMsg)
+					_2: _elm_lang$core$Maybe$Just(
+						sendMsg(payload))
 				};
 			default:
-				var _p8 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
-				var m = _p8._0;
-				var c = _p8._1;
+				var _p9 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
+				var m = _p9._0;
+				var c = _p9._1;
 				return {ctor: '_Tuple3', _0: m, _1: c, _2: _elm_lang$core$Maybe$Nothing};
 		}
 	});
@@ -15901,6 +15938,9 @@ var _user$project$Chat$NewMember = function (a) {
 var _user$project$Chat$NewMessage = function (a) {
 	return {ctor: 'NewMessage', _0: a};
 };
+var _user$project$Chat$JoinLobby = function (a) {
+	return {ctor: 'JoinLobby', _0: a};
+};
 
 var _user$project$Ports$player = _elm_lang$core$Native_Platform.outgoingPort(
 	'player',
@@ -15908,6 +15948,55 @@ var _user$project$Ports$player = _elm_lang$core$Native_Platform.outgoingPort(
 		return v;
 	});
 
+var _user$project$SoundPlayer$encodeSendSound = F2(
+	function (username, soundfile) {
+		return _elm_lang$core$Json_Encode$object(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'target',
+					_1: _elm_lang$core$Json_Encode$string(username)
+				},
+					{
+					ctor: '_Tuple2',
+					_0: 'soundfile',
+					_1: _elm_lang$core$Json_Encode$string(soundfile)
+				}
+				]));
+	});
+var _user$project$SoundPlayer$update = F3(
+	function (config, message, model) {
+		var _p0 = A2(_elm_lang$core$Debug$log, 'SP.update', message);
+		switch (_p0.ctor) {
+			case 'Receive':
+				var _p1 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$receiveSoundDecoder, _p0._0);
+				if (_p1.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _user$project$Ports$player(_p1._0),
+						_2: _elm_lang$core$Maybe$Nothing
+					};
+				} else {
+					return _user$project$Common$nothing(model);
+				}
+			case 'Send':
+				var payload = A2(_user$project$SoundPlayer$encodeSendSound, _p0._0, _p0._1);
+				return {
+					ctor: '_Tuple3',
+					_0: model,
+					_1: _elm_lang$core$Platform_Cmd$none,
+					_2: _elm_lang$core$Maybe$Just(
+						config.sendMsg(payload))
+				};
+			default:
+				var _p2 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
+				var m = _p2._0;
+				var c = _p2._1;
+				return {ctor: '_Tuple3', _0: m, _1: c, _2: _elm_lang$core$Maybe$Nothing};
+		}
+	});
 var _user$project$SoundPlayer$Model = F2(
 	function (a, b) {
 		return {selectedUser: a, mdl: b};
@@ -15916,41 +16005,6 @@ var _user$project$SoundPlayer$init = A2(_user$project$SoundPlayer$Model, '', _de
 var _user$project$SoundPlayer$PlayCommand = F2(
 	function (a, b) {
 		return {target: a, soundfile: b};
-	});
-var _user$project$SoundPlayer$update = F3(
-	function (config, message, model) {
-		var _p0 = message;
-		switch (_p0.ctor) {
-			case 'Receive':
-				var _p1 = A2(
-					_elm_lang$core$Json_Decode$decodeValue,
-					_user$project$Decoders$messageDecoder(_user$project$SoundPlayer$PlayCommand),
-					_p0._0);
-				if (_p1.ctor === 'Ok') {
-					var _p2 = _p1._0;
-					return _elm_lang$core$Native_Utils.eq(_p2.target, config.username) ? {
-						ctor: '_Tuple3',
-						_0: model,
-						_1: _user$project$Ports$player(_p2.soundfile),
-						_2: _elm_lang$core$Maybe$Nothing
-					} : {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
-				} else {
-					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
-				}
-			case 'Send':
-				return {
-					ctor: '_Tuple3',
-					_0: model,
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Just(
-						A2(config.sendMsg, _p0._0, _p0._1))
-				};
-			default:
-				var _p3 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
-				var m = _p3._0;
-				var c = _p3._1;
-				return {ctor: '_Tuple3', _0: m, _1: c, _2: _elm_lang$core$Maybe$Nothing};
-		}
 	});
 var _user$project$SoundPlayer$Config = F2(
 	function (a, b) {
@@ -15966,7 +16020,7 @@ var _user$project$SoundPlayer$Send = F2(
 	function (a, b) {
 		return {ctor: 'Send', _0: a, _1: b};
 	});
-var _user$project$SoundPlayer$view = F2(
+var _user$project$SoundPlayer$viewMain = F2(
 	function (users, model) {
 		var radioToggle = F2(
 			function (idx, user) {
@@ -15994,9 +16048,94 @@ var _user$project$SoundPlayer$view = F2(
 				[]),
 			A2(_elm_lang$core$List$indexedMap, radioToggle, users));
 	});
+var _user$project$SoundPlayer$view = F2(
+	function (users, model) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			_elm_lang$html$Html$text('This component will shown when the user-channel is available'),
+			A2(
+				_elm_lang$core$Maybe$map,
+				_user$project$SoundPlayer$viewMain(users),
+				model));
+	});
 
-var _user$project$App$roomname = 'room:lobby';
-var _user$project$App$socketUrl = '/socket/websocket';
+var _user$project$SocketHelpers$joinChannel = F7(
+	function (payload, roomname, joinSuccessMsg, joinErrorMsg, hooks, phxMsg, model) {
+		var channel = A2(
+			_fbonetti$elm_phoenix_socket$Phoenix_Channel$onError,
+			joinErrorMsg,
+			A2(
+				_fbonetti$elm_phoenix_socket$Phoenix_Channel$onJoin,
+				joinSuccessMsg,
+				A2(
+					_fbonetti$elm_phoenix_socket$Phoenix_Channel$withPayload,
+					payload,
+					_fbonetti$elm_phoenix_socket$Phoenix_Channel$init(roomname))));
+		var _p0 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$join, channel, model.phxSocket);
+		var socket$ = _p0._0;
+		var cmd = _p0._1;
+		var socket$$ = A3(
+			_elm_lang$core$List$foldl,
+			function (_p1) {
+				var _p2 = _p1;
+				return A3(_fbonetti$elm_phoenix_socket$Phoenix_Socket$on, _p2._0, roomname, _p2._1);
+			},
+			socket$,
+			hooks);
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{phxSocket: socket$$}),
+			_1: A2(_elm_lang$core$Platform_Cmd$map, phxMsg, cmd)
+		};
+	});
+var _user$project$SocketHelpers$socketUrl = '/socket/websocket';
+var _user$project$SocketHelpers$init = function (loc) {
+	return _fbonetti$elm_phoenix_socket$Phoenix_Socket$withDebug(
+		_fbonetti$elm_phoenix_socket$Phoenix_Socket$init(
+			A2(_elm_lang$core$Basics_ops['++'], loc, _user$project$SocketHelpers$socketUrl)));
+};
+
+var _user$project$App$bind$ = F3(
+	function (_p0, update, mms) {
+		var _p1 = _p0;
+		var _p5 = _p1._0;
+		var _p4 = _p1._1;
+		var _p2 = mms;
+		if (_p2.ctor === 'Just') {
+			var _p3 = A2(update, _p2._0, _p5);
+			var md2 = _p3._0;
+			var c2 = _p3._1;
+			return {
+				ctor: '_Tuple2',
+				_0: md2,
+				_1: _elm_lang$core$Platform_Cmd$batch(
+					_elm_lang$core$Native_List.fromArray(
+						[_p4, c2]))
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: _p5, _1: _p4};
+		}
+	});
+var _user$project$App$bind = F2(
+	function (_p6, f) {
+		var _p7 = _p6;
+		var _p8 = f(_p7._0);
+		var m2 = _p8._0;
+		var c2 = _p8._1;
+		return {
+			ctor: '_Tuple2',
+			_0: m2,
+			_1: _elm_lang$core$Platform_Cmd$batch(
+				_elm_lang$core$Native_List.fromArray(
+					[_p7._1, c2]))
+		};
+	});
+var _user$project$App$initPhxSocket = function (loc) {
+	return _user$project$SocketHelpers$init(loc);
+};
+var _user$project$App$lobby = 'room:lobby';
 var _user$project$App$serverUrl = '/api/default';
 var _user$project$App$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
@@ -16004,108 +16143,6 @@ var _user$project$App$Model = F8(
 	});
 var _user$project$App$Chat = {ctor: 'Chat'};
 var _user$project$App$Login = {ctor: 'Login'};
-var _user$project$App$Mdl = function (a) {
-	return {ctor: 'Mdl', _0: a};
-};
-var _user$project$App$ReceiveReply = function (a) {
-	return {ctor: 'ReceiveReply', _0: a};
-};
-var _user$project$App$ShowJoinedMessage = function (a) {
-	return {ctor: 'ShowJoinedMessage', _0: a};
-};
-var _user$project$App$ReceiveChatMessage = function (a) {
-	return {ctor: 'ReceiveChatMessage', _0: a};
-};
-var _user$project$App$PhoenixMsg = function (a) {
-	return {ctor: 'PhoenixMsg', _0: a};
-};
-var _user$project$App$joinChat = function (model) {
-	var payload = _elm_lang$core$Json_Encode$object(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: 'username',
-				_1: _elm_lang$core$Json_Encode$string(model.login.username)
-			}
-			]));
-	var channel = A2(
-		_fbonetti$elm_phoenix_socket$Phoenix_Channel$onJoin,
-		_user$project$App$ShowJoinedMessage,
-		A2(
-			_fbonetti$elm_phoenix_socket$Phoenix_Channel$withPayload,
-			payload,
-			_fbonetti$elm_phoenix_socket$Phoenix_Channel$init(_user$project$App$roomname)));
-	var _p0 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$join, channel, model.phxSocket);
-	var socket$ = _p0._0;
-	var cmd = _p0._1;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Native_Utils.update(
-			model,
-			{phxSocket: socket$}),
-		_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, cmd)
-	};
-};
-var _user$project$App$FetchFail = function (a) {
-	return {ctor: 'FetchFail', _0: a};
-};
-var _user$project$App$FetchSucceed = function (a) {
-	return {ctor: 'FetchSucceed', _0: a};
-};
-var _user$project$App$SendSound = F2(
-	function (a, b) {
-		return {ctor: 'SendSound', _0: a, _1: b};
-	});
-var _user$project$App$SPMsg = function (a) {
-	return {ctor: 'SPMsg', _0: a};
-};
-var _user$project$App$SendChat = {ctor: 'SendChat'};
-var _user$project$App$ChatMsg = function (a) {
-	return {ctor: 'ChatMsg', _0: a};
-};
-var _user$project$App$initPhxSocket = function (loc) {
-	return A4(
-		_fbonetti$elm_phoenix_socket$Phoenix_Socket$on,
-		'play_sound',
-		_user$project$App$roomname,
-		function (_p1) {
-			return _user$project$App$SPMsg(
-				_user$project$SoundPlayer$Receive(_p1));
-		},
-		A4(
-			_fbonetti$elm_phoenix_socket$Phoenix_Socket$on,
-			'lost_member',
-			_user$project$App$roomname,
-			function (_p2) {
-				return _user$project$App$ChatMsg(
-					_user$project$Chat$LostMember(_p2));
-			},
-			A4(
-				_fbonetti$elm_phoenix_socket$Phoenix_Socket$on,
-				'new_member',
-				_user$project$App$roomname,
-				function (_p3) {
-					return _user$project$App$ChatMsg(
-						_user$project$Chat$NewMember(_p3));
-				},
-				A4(
-					_fbonetti$elm_phoenix_socket$Phoenix_Socket$on,
-					'new_msg',
-					_user$project$App$roomname,
-					function (_p4) {
-						return _user$project$App$ChatMsg(
-							_user$project$Chat$NewMessage(_p4));
-					},
-					A4(
-						_fbonetti$elm_phoenix_socket$Phoenix_Socket$on,
-						'phx_reply',
-						_user$project$App$roomname,
-						_user$project$App$ReceiveReply,
-						_fbonetti$elm_phoenix_socket$Phoenix_Socket$withDebug(
-							_fbonetti$elm_phoenix_socket$Phoenix_Socket$init(
-								A2(_elm_lang$core$Basics_ops['++'], loc, _user$project$App$socketUrl))))))));
-};
 var _user$project$App$init = function (loc) {
 	return {
 		ctor: '_Tuple2',
@@ -16114,14 +16151,68 @@ var _user$project$App$init = function (loc) {
 			'',
 			_user$project$Login$init,
 			_user$project$Chat$init,
-			_user$project$SoundPlayer$init,
+			_elm_lang$core$Maybe$Nothing,
 			_user$project$App$Login,
-			'',
+			'initial debugMsg',
 			_user$project$App$initPhxSocket(
 				A2(_elm_lang$core$Debug$log, 'loc', loc)),
 			_debois$elm_mdl$Material$model),
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
+};
+var _user$project$App$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
+};
+var _user$project$App$JoinError = F2(
+	function (a, b) {
+		return {ctor: 'JoinError', _0: a, _1: b};
+	});
+var _user$project$App$ShowJoinedMessage = function (a) {
+	return {ctor: 'ShowJoinedMessage', _0: a};
+};
+var _user$project$App$PhoenixMsg = function (a) {
+	return {ctor: 'PhoenixMsg', _0: a};
+};
+var _user$project$App$MyChannelSuccess = function (a) {
+	return {ctor: 'MyChannelSuccess', _0: a};
+};
+var _user$project$App$SendSound = function (a) {
+	return {ctor: 'SendSound', _0: a};
+};
+var _user$project$App$SPMsg = function (a) {
+	return {ctor: 'SPMsg', _0: a};
+};
+var _user$project$App$makeIndividualChannel = function (model) {
+	var myRoom = A2(_elm_lang$core$Basics_ops['++'], 'user:', model.login.username);
+	var payload = _elm_lang$core$Json_Encode$null;
+	return A7(
+		_user$project$SocketHelpers$joinChannel,
+		payload,
+		myRoom,
+		_user$project$App$MyChannelSuccess,
+		_user$project$App$JoinError(myRoom),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'receive_sound',
+				_1: function (_p9) {
+					return _user$project$App$SPMsg(
+						_user$project$SoundPlayer$Receive(_p9));
+				}
+			}
+			]),
+		_user$project$App$PhoenixMsg,
+		model);
+};
+var _user$project$App$ReceiveChatMessage = function (a) {
+	return {ctor: 'ReceiveChatMessage', _0: a};
+};
+var _user$project$App$SendChat = function (a) {
+	return {ctor: 'SendChat', _0: a};
+};
+var _user$project$App$ChatMsg = function (a) {
+	return {ctor: 'ChatMsg', _0: a};
 };
 var _user$project$App$viewApp = function (model) {
 	return A2(
@@ -16160,209 +16251,196 @@ var _user$project$App$viewApp = function (model) {
 					]))
 			]));
 };
-var _user$project$App$Join = function (a) {
-	return {ctor: 'Join', _0: a};
+var _user$project$App$JoinLobby = function (a) {
+	return {ctor: 'JoinLobby', _0: a};
+};
+var _user$project$App$joinChat = function (model) {
+	var payload = _user$project$Login$encoder(model.login);
+	return A7(
+		_user$project$SocketHelpers$joinChannel,
+		payload,
+		_user$project$App$lobby,
+		_user$project$App$JoinLobby,
+		_user$project$App$JoinError(_user$project$App$lobby),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'new_msg',
+				_1: function (_p10) {
+					return _user$project$App$ChatMsg(
+						_user$project$Chat$NewMessage(_p10));
+				}
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'new_member',
+				_1: function (_p11) {
+					return _user$project$App$ChatMsg(
+						_user$project$Chat$NewMember(_p11));
+				}
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'lost_member',
+				_1: function (_p12) {
+					return _user$project$App$ChatMsg(
+						_user$project$Chat$LostMember(_p12));
+				}
+			}
+			]),
+		_user$project$App$PhoenixMsg,
+		model);
+};
+var _user$project$App$Signin = function (a) {
+	return {ctor: 'Signin', _0: a};
 };
 var _user$project$App$LoginMsg = function (a) {
 	return {ctor: 'LoginMsg', _0: a};
 };
 var _user$project$App$update = F2(
 	function (message, model) {
-		var _p5 = message;
-		switch (_p5.ctor) {
-			case 'LoginMsg':
-				var _p6 = A3(_user$project$Login$update, _user$project$App$Join, _p5._0, model.login);
-				var m = _p6._0;
-				var c1 = _p6._1;
-				var maybeMsg = _p6._2;
-				var newModel = _elm_lang$core$Native_Utils.update(
-					model,
-					{login: m});
-				var c1$ = A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$LoginMsg, c1);
-				var _p7 = maybeMsg;
-				if (_p7.ctor === 'Just') {
-					var _p8 = A2(_user$project$App$update, _p7._0, newModel);
-					var newModel$ = _p8._0;
-					var c2 = _p8._1;
+		update:
+		while (true) {
+			var _p13 = message;
+			switch (_p13.ctor) {
+				case 'LoginMsg':
+					var _p14 = A3(_user$project$Login$update, _user$project$App$Signin, _p13._0, model.login);
+					var m1 = _p14._0;
+					var c1 = _p14._1;
+					var maybeMsg = _p14._2;
+					var res1 = {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{login: m1}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$LoginMsg, c1)
+					};
+					return A3(_user$project$App$bind$, res1, _user$project$App$update, maybeMsg);
+				case 'Signin':
+					return A2(
+						_user$project$App$bind,
+						_user$project$App$joinChat(
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{username: _p13._0})),
+						_user$project$App$makeIndividualChannel);
+				case 'JoinLobby':
+					var _v4 = _user$project$App$ChatMsg(
+						_user$project$Chat$JoinLobby(_p13._0)),
+						_v5 = _elm_lang$core$Native_Utils.update(
+						model,
+						{viewType: _user$project$App$Chat});
+					message = _v4;
+					model = _v5;
+					continue update;
+				case 'MyChannelSuccess':
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								soundplayer: _elm_lang$core$Maybe$Just(_user$project$SoundPlayer$init)
+							}),
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				case 'ChatMsg':
+					var _p15 = A3(_user$project$Chat$update, _user$project$App$SendChat, _p13._0, model.chat);
+					var m1 = _p15._0;
+					var c1 = _p15._1;
+					var maybeMsg = _p15._2;
+					var res1 = {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{chat: m1}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$ChatMsg, c1)
+					};
+					return A3(_user$project$App$bind$, res1, _user$project$App$update, maybeMsg);
+				case 'SendChat':
+					var push = A2(
+						_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
+						_p13._0,
+						A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, 'new_msg', _user$project$App$lobby));
+					var _p16 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
+					var socket$ = _p16._0;
+					var socketCmd = _p16._1;
 					return {
 						ctor: '_Tuple2',
-						_0: newModel$,
-						_1: _elm_lang$core$Platform_Cmd$batch(
-							_elm_lang$core$Native_List.fromArray(
-								[c1$, c2]))
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{phxSocket: socket$}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, socketCmd)
 					};
-				} else {
-					return {ctor: '_Tuple2', _0: newModel, _1: c1$};
-				}
-			case 'Join':
-				return _user$project$App$joinChat(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{username: _p5._0}));
-			case 'ChatMsg':
-				var _p9 = A3(_user$project$Chat$update, _user$project$App$SendChat, _p5._0, model.chat);
-				var m = _p9._0;
-				var c1 = _p9._1;
-				var maybeMsg = _p9._2;
-				var newModel = _elm_lang$core$Native_Utils.update(
-					model,
-					{chat: m});
-				var c1$ = A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$ChatMsg, c1);
-				var _p10 = maybeMsg;
-				if (_p10.ctor === 'Just') {
-					var _p11 = A2(_user$project$App$update, _p10._0, newModel);
-					var newModel$ = _p11._0;
-					var c2 = _p11._1;
+				case 'SPMsg':
+					var config = A2(_user$project$SoundPlayer$Config, model.username, _user$project$App$SendSound);
+					var res = A2(
+						_elm_lang$core$Maybe$map,
+						A2(_user$project$SoundPlayer$update, config, _p13._0),
+						model.soundplayer);
+					var _p17 = res;
+					if (_p17.ctor === 'Just') {
+						return A3(
+							_user$project$App$bind$,
+							{
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										soundplayer: _elm_lang$core$Maybe$Just(_p17._0._0)
+									}),
+								_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$SPMsg, _p17._0._1)
+							},
+							_user$project$App$update,
+							_p17._0._2);
+					} else {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							model,
+							_elm_lang$core$Native_List.fromArray(
+								[]));
+					}
+				case 'SendSound':
+					var push = A2(
+						_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
+						_p13._0,
+						A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, 'send_sound', _user$project$App$lobby));
+					var _p18 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
+					var socket$ = _p18._0;
+					var socketCmd = _p18._1;
 					return {
 						ctor: '_Tuple2',
-						_0: newModel$,
-						_1: _elm_lang$core$Platform_Cmd$batch(
-							_elm_lang$core$Native_List.fromArray(
-								[c1$, c2]))
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{phxSocket: socket$}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, socketCmd)
 					};
-				} else {
-					return {ctor: '_Tuple2', _0: newModel, _1: c1$};
-				}
-			case 'SendChat':
-				var payload = _elm_lang$core$Json_Encode$object(
-					_elm_lang$core$Native_List.fromArray(
-						[
-							{
-							ctor: '_Tuple2',
-							_0: 'body',
-							_1: _elm_lang$core$Json_Encode$string(model.chat.newMessage)
-						}
-						]));
-				var push = A2(
-					_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
-					payload,
-					A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, 'new_msg', _user$project$App$roomname));
-				var _p12 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
-				var socket$ = _p12._0;
-				var socketCmd = _p12._1;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{phxSocket: socket$}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, socketCmd)
-				};
-			case 'SPMsg':
-				var config = A2(_user$project$SoundPlayer$Config, model.username, _user$project$App$SendSound);
-				var _p13 = A3(_user$project$SoundPlayer$update, config, _p5._0, model.soundplayer);
-				var m = _p13._0;
-				var c1 = _p13._1;
-				var maybeMsg = _p13._2;
-				var newModel = _elm_lang$core$Native_Utils.update(
-					model,
-					{soundplayer: m});
-				var c1$ = A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$SPMsg, c1);
-				var _p14 = maybeMsg;
-				if (_p14.ctor === 'Just') {
-					var _p15 = A2(_user$project$App$update, _p14._0, newModel);
-					var newModel$ = _p15._0;
-					var c2 = _p15._1;
+				case 'PhoenixMsg':
+					var _p21 = _p13._0;
+					var _p19 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$update, _p21, model.phxSocket);
+					var phxSocket = _p19._0;
+					var phxCmd = _p19._1;
+					var _p20 = A2(_elm_lang$core$Debug$log, 'App.update PhoenixMsg', _p21);
 					return {
 						ctor: '_Tuple2',
-						_0: newModel$,
-						_1: _elm_lang$core$Platform_Cmd$batch(
-							_elm_lang$core$Native_List.fromArray(
-								[c1$, c2]))
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{phxSocket: phxSocket}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, phxCmd)
 					};
-				} else {
-					return {ctor: '_Tuple2', _0: newModel, _1: c1$};
-				}
-			case 'SendSound':
-				var payload = _elm_lang$core$Json_Encode$object(
-					_elm_lang$core$Native_List.fromArray(
-						[
+				case 'Mdl':
+					return A2(_debois$elm_mdl$Material$update, _p13._0, model);
+				default:
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
 							{
-							ctor: '_Tuple2',
-							_0: 'target',
-							_1: _elm_lang$core$Json_Encode$string(_p5._0)
-						},
-							{
-							ctor: '_Tuple2',
-							_0: 'soundfile',
-							_1: _elm_lang$core$Json_Encode$string(_p5._1)
-						}
-						]));
-				var push = A2(
-					_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
-					payload,
-					A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, 'send_sound', _user$project$App$roomname));
-				var _p16 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
-				var socket$ = _p16._0;
-				var socketCmd = _p16._1;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{phxSocket: socket$}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, socketCmd)
-				};
-			case 'FetchSucceed':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{debugMsg: _p5._0}),
-					_elm_lang$core$Native_List.fromArray(
-						[]));
-			case 'FetchFail':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							debugMsg: _elm_lang$core$Basics$toString(_p5._0)
-						}),
-					_elm_lang$core$Native_List.fromArray(
-						[]));
-			case 'PhoenixMsg':
-				var _p19 = _p5._0;
-				var _p17 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$update, _p19, model.phxSocket);
-				var phxSocket = _p17._0;
-				var phxCmd = _p17._1;
-				var _p18 = A2(_elm_lang$core$Debug$log, 'PhoenixMsg', _p19);
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{phxSocket: phxSocket}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, phxCmd)
-				};
-			case 'ShowJoinedMessage':
-				var _p20 = A2(_elm_lang$core$Debug$log, 'ShowJoinedMessage', _p5._0);
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{viewType: _user$project$App$Chat}),
-					_elm_lang$core$Native_List.fromArray(
-						[]));
-			case 'Mdl':
-				return A2(_debois$elm_mdl$Material$update, _p5._0, model);
-			case 'ReceiveReply':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							debugMsg: _elm_lang$core$Basics$toString(_p5._0)
-						}),
-					_elm_lang$core$Native_List.fromArray(
-						[]));
-			default:
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							debugMsg: _elm_lang$core$Basics$toString(message)
-						}),
-					_elm_lang$core$Native_List.fromArray(
-						[]));
+								debugMsg: _elm_lang$core$Basics$toString(message)
+							}),
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+			}
 		}
 	});
 var _user$project$App$viewBody = function (model) {
@@ -16375,8 +16453,8 @@ var _user$project$App$viewBody = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				function () {
-				var _p21 = model.viewType;
-				if (_p21.ctor === 'Login') {
+				var _p22 = model.viewType;
+				if (_p22.ctor === 'Login') {
 					return A2(
 						_elm_lang$html$Html_App$map,
 						_user$project$App$LoginMsg,
@@ -16401,13 +16479,7 @@ var _user$project$App$view = function (model) {
 					A2(
 					_elm_lang$html$Html$h1,
 					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$style(
-							_elm_lang$core$Native_List.fromArray(
-								[
-									{ctor: '_Tuple2', _0: 'padding', _1: '2rem'}
-								]))
-						]),
+						[]),
 					_elm_lang$core$Native_List.fromArray(
 						[
 							_elm_lang$html$Html$text('Simon\'s Elm-Phoenix Chat')

@@ -16,10 +16,13 @@ messageDecoder' constructor dec =
 newMemberDecoder =
     object2 (,)
         ("username" := string)
-        ("users" := userNameDecoder)
+        ("users" := userNamesDecoder)
 
-userNameDecoder = list string
+userNamesDecoder : Decoder (List String)
+userNamesDecoder = list string
 
+receiveSoundDecoder =
+    "body" := string
 
 -- newUserDecoder =
 -- playDecoder constructor =

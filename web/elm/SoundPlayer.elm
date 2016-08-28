@@ -4,7 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Json.Decode exposing (decodeValue, Value)
+import Json.Decode as Json exposing (decodeValue, Value)
+import Json.Encode as E
 import List as L
 
 import Material
@@ -13,6 +14,7 @@ import Material.Button as Button
 
 import Ports exposing (..)
 import Decoders exposing (..)
+import Common exposing (..)
 
 type alias User = String
 type alias Sound = String
@@ -36,29 +38,33 @@ type Msg
 
 type alias Config msg =
     { username : String
-    , sendMsg : User -> Sound -> msg
+    , sendMsg : E.Value -> msg
     }
 
 update : Config msg -> Msg -> Model -> (Model, Cmd Msg, Maybe msg)
 update config message model =
-    case message of
+    case Debug.log "SP.update" message of
         Receive jsonMessage ->
-            case decodeValue (messageDecoder PlayCommand) jsonMessage of
-                Result.Ok newCommand ->
-                    if newCommand.target == config.username then
-                        (model, player newCommand.soundfile, Nothing)
-                    else
-                        (model, Cmd.none, Nothing)
-                _ ->
-                    (model, Cmd.none, Nothing)
+            case decodeValue receiveSoundDecoder jsonMessage of
+                Result.Ok soundfile ->
+                    (model, player soundfile, Nothing)
+                Result.Err err ->
+                    model |> nothing
         Send user sound ->
-            (model, Cmd.none, Just <| config.sendMsg user sound)
+            let payload = encodeSendSound user sound
+            in (model, Cmd.none, Just <| config.sendMsg payload)
         Mdl msg ->
             let (m, c) = Material.update msg model
             in (m, c, Nothing)
 
-view : List User -> Model -> Html Msg
+view : List User -> Maybe Model -> Html Msg
 view users model =
+    model
+    |> Maybe.map (viewMain users)
+    |> Maybe.withDefault (text "This component will shown when the user-channel is available")
+
+viewMain : List User -> Model -> Html Msg
+viewMain users model =
     let
         radioToggle idx user =
             Button.render Mdl [idx] model.mdl
@@ -81,6 +87,13 @@ view users model =
         -- button
         --     [ onClick (Send "Jona" "") ]
         --     [ text "send sound" ]
+
+encodeSendSound : String -> String -> E.Value
+encodeSendSound username soundfile =
+    E.object
+        [ ("target", E.string username)
+        , ("soundfile", E.string soundfile)
+        ]
 
 -- div
 --   []
