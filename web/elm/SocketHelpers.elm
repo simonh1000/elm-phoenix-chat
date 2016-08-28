@@ -4,7 +4,7 @@ import List as L
 
 import Phoenix.Socket as Socket exposing (withDebug)
 import Phoenix.Channel as Channel
-import Phoenix.Push
+import Phoenix.Push as Push
 
 import Json.Encode exposing (Value)
 
@@ -41,4 +41,16 @@ joinChannel payload roomname joinSuccessMsg joinErrorMsg hooks phxMsg model =
     in
     ( { model | phxSocket = socket'' }
     , Cmd.map phxMsg cmd
+    )
+
+pushSocket msgType topic phxMsg payload model =
+    let
+        push =
+            Push.init msgType topic
+            |> Push.withPayload payload
+        (socket', socketCmd) =
+            Socket.push push model.phxSocket
+    in
+    ( { model | phxSocket = socket' }
+    , Cmd.map phxMsg socketCmd
     )

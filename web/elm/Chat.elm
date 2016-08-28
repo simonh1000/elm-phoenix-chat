@@ -105,12 +105,17 @@ update sendMsg message model =
             in (m, c, Nothing)
 
 
-view : Model -> Html Msg
+view : Model -> List (Html Msg)
 view model =
-    div [ id "chat" ]
-        [ model.messages |> L.reverse |> L.map viewMessage |> div [ class "messages" ]
-        , text <| toString model.members
+    -- div [ id "chat" ]
+        [ membersView model.members
+        , model.messages |> L.reverse |> L.map viewMessage |> div [ class "messages" ]
         , inputView model
+        ]
+
+membersView users =
+    div [ class "users-list" ]
+        [ ul [] <| L.map (\m -> li [] [ text m ]) users
         ]
 
 viewMessage : Message -> Html Msg

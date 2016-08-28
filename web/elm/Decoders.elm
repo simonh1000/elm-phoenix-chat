@@ -23,9 +23,3 @@ userNamesDecoder = list string
 
 receiveSoundDecoder =
     "body" := string
-
--- newUserDecoder =
--- playDecoder constructor =
---     object2 constructor
---         ("username" := string)
---         (oneOf [ "body" := string, succeed ""])
