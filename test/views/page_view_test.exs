@@ -1,3 +1,3 @@
-defmodule Meepg.PageViewTest do
-  use Meepg.ConnCase, async: true
+defmodule EPChat.PageViewTest do
+  use EPChat.ConnCase, async: true
 end

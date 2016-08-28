@@ -1,11 +1,11 @@
-defmodule Meepg.Gettext do
+defmodule EPChat.Gettext do
   @moduledoc """
   A module providing Internationalization with a gettext-based API.
 
   By using [Gettext](http://hexdocs.pm/gettext),
   your module gains a set of macros for translations, for example:
 
-      import Meepg.Gettext
+      import EPChat.Gettext
 
       # Simple translation
       gettext "Here is the string to translate"
@@ -20,5 +20,5 @@ defmodule Meepg.Gettext do
 
   See the [Gettext Docs](http://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext, otp_app: :meepg
+  use Gettext, otp_app: :epchat
 end

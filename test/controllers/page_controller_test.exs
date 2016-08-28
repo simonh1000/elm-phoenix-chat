@@ -1,5 +1,5 @@
-defmodule Meepg.PageControllerTest do
-  use Meepg.ConnCase
+defmodule EPChat.PageControllerTest do
+  use EPChat.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get conn, "/"

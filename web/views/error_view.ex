@@ -1,5 +1,5 @@
-defmodule Meepg.ErrorView do
-  use Meepg.Web, :view
+defmodule EPChat.ErrorView do
+  use EPChat.Web, :view
 
   def render("404.html", _assigns) do
     "Page not found"

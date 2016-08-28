@@ -1,6 +1,6 @@
-defmodule Meepg.RoomChannel do
+defmodule EPChat.RoomChannel do
   use Phoenix.Channel
-  alias Meepg.UserList
+  alias EPChat.UserList
 
 
   intercept ["new_msg"]
@@ -34,13 +34,6 @@ defmodule Meepg.RoomChannel do
     #   IO.inspect("handle_in: " <> body)
     #   IO.inspect(socket.assigns[:username])
       broadcast! socket, "new_msg", %{username: socket.assigns.username, body: body}
-      {:noreply, socket}
-    end
-
-  def handle_in("send_sound", %{"target" => tgt, "soundfile" => sf}, socket) do
-      IO.inspect("send_sound")
-    #   broadcast! socket, "play_sound", %{username: tgt, body: sf}
-      Meepg.Endpoint.broadcast("user:"<>tgt, "send_sound", %{body: sf})
       {:noreply, socket}
     end
 

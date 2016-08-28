@@ -1,12 +1,12 @@
-defmodule Meepg.Web do
+defmodule EPChat.Web do
   @moduledoc """
   A module that keeps using definitions for controllers,
   views and so on.
 
   This can be used in your application as:
 
-      use Meepg.Web, :controller
-      use Meepg.Web, :view
+      use EPChat.Web, :controller
+      use EPChat.Web, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -26,8 +26,8 @@ defmodule Meepg.Web do
     quote do
       use Phoenix.Controller
 
-      import Meepg.Router.Helpers
-      import Meepg.Gettext
+      import EPChat.Router.Helpers
+      import EPChat.Gettext
     end
   end
 
@@ -41,9 +41,9 @@ defmodule Meepg.Web do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import Meepg.Router.Helpers
-      import Meepg.ErrorHelpers
-      import Meepg.Gettext
+      import EPChat.Router.Helpers
+      import EPChat.ErrorHelpers
+      import EPChat.Gettext
     end
   end
 
@@ -56,7 +56,7 @@ defmodule Meepg.Web do
   def channel do
     quote do
       use Phoenix.Channel
-      import Meepg.Gettext
+      import EPChat.Gettext
     end
   end
 

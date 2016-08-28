@@ -1,4 +1,4 @@
-defmodule Meepg.ChannelCase do
+defmodule EPChat.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -22,7 +22,7 @@ defmodule Meepg.ChannelCase do
 
 
       # The default endpoint for testing
-      @endpoint Meepg.Endpoint
+      @endpoint EPChat.Endpoint
     end
   end
 

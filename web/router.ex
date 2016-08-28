@@ -1,5 +1,5 @@
-defmodule Meepg.Router do
-  use Meepg.Web, :router
+defmodule EPChat.Router do
+  use EPChat.Web, :router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -14,12 +14,12 @@ defmodule Meepg.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", Meepg do
+  scope "/api", EPChat do
     pipe_through :api
     get "/default", DefaultController, :show
   end
 
-  scope "/", Meepg do
+  scope "/", EPChat do
     pipe_through :browser # Use the default browser stack
 
     get "/*any", PageController, :index

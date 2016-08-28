@@ -6,12 +6,12 @@
 use Mix.Config
 
 # Configures the endpoint
-config :meepg, Meepg.Endpoint,
+config :epchat, EPChat.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "6wYu1fE9pBwy7yV6Cik5PqPSrgeSP1uAc+ArecbMuu30uYDMEusappahlv/LdDBi",
   render_errors: [accepts: ~w(html json)],
-  pubsub: [name: Meepg.PubSub,
+  pubsub: [name: EPChat.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger

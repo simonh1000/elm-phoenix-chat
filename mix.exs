@@ -1,8 +1,8 @@
-defmodule Meepg.Mixfile do
+defmodule EPChat.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :meepg,
+    [app: :epchat,
      version: "0.0.1",
      elixir: "~> 1.0",
      elixirc_paths: elixirc_paths(Mix.env),
@@ -16,7 +16,7 @@ defmodule Meepg.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {Meepg, []},
+    [mod: {EPChat, []},
      applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext]]
   end
 

@@ -1,4 +1,4 @@
-defmodule Meepg.ErrorHelpers do
+defmodule EPChat.ErrorHelpers do
   @moduledoc """
   Conveniences for translating and building error messages.
   """
@@ -26,10 +26,10 @@ defmodule Meepg.ErrorHelpers do
     #
     #     dngettext "errors", "1 file", "%{count} files", count
     #
-    Gettext.dngettext(Meepg.Gettext, "errors", msg, msg, opts[:count], opts)
+    Gettext.dngettext(EPChat.Gettext, "errors", msg, msg, opts[:count], opts)
   end
 
   def translate_error(msg) do
-    Gettext.dgettext(Meepg.Gettext, "errors", msg)
+    Gettext.dgettext(EPChat.Gettext, "errors", msg)
   end
 end

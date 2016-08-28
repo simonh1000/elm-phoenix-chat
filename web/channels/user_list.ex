@@ -1,4 +1,4 @@
-defmodule Meepg.UserList do
+defmodule EPChat.UserList do
 
     def start_link do
       IO.inspect("Starting agent")

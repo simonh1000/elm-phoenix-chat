@@ -1,3 +1,3 @@
-defmodule Meepg.PageView do
-  use Meepg.Web, :view
+defmodule EPChat.PageView do
+  use EPChat.Web, :view
 end

@@ -1,10 +1,9 @@
-defmodule Meepg.UserSocket do
+defmodule EPChat.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "room:*", Meepg.RoomChannel
-  channel "user:*", Meepg.UserChannel
-  # channel "*", Meepg.RoomChannel
+  channel "room:*", EPChat.RoomChannel
+  channel "user:*", EPChat.UserChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
@@ -32,7 +31,7 @@ defmodule Meepg.UserSocket do
   # Would allow you to broadcast a "disconnect" event and terminate
   # all active sockets and channels for a given user:
   #
-  #     Meepg.Endpoint.broadcast("users_socket:#{user.id}", "disconnect", %{})
+  #     EPChat.Endpoint.broadcast("users_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
   def id(_socket), do: nil
