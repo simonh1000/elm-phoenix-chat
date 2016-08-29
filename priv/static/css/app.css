@@ -7,9 +7,20 @@ li span.user-name {
 li span.system {
   color: brown; }
 
-#login .mdl-cell {
+.mdl-layout__content {
   display: flex;
-  justify-content: center; }
+  flex-direction: column; }
+
+#login {
+  flex-grow: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; }
+
+.chat, .sound-player {
+  background-color: #eee;
+  padding: 15px; }
 
 .chat {
   display: flex;
@@ -17,13 +28,20 @@ li span.system {
   .chat .messages {
     flex-grow: 2;
     overflow: auto; }
+  .chat .message-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white; }
+    .chat .message-input .mdl-button--fab {
+      margin: 0 0 0 10px; }
+
+.sound-player span {
+  margin-right: 20px; }
 
 @media screen and (min-device-width: 768px) {
   header h1 {
     padding: 2rem; }
-  .mdl-layout__content {
-    display: flex;
-    flex-direction: column; }
-    .mdl-layout__content .mdl-grid {
-      width: 100%;
-      flex-grow: 2; } }
+  .mdl-layout__content .mdl-grid {
+    width: calc(100% - 16px);
+    flex-grow: 2; } }

@@ -23,10 +23,10 @@ import Phoenix.Socket as Socket exposing (withDebug)
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 
+import Common exposing (..)
+import SocketHelpers as SH exposing (..)
 import Login
 import Chat
-import SoundPlayer as SP
-import SocketHelpers as SH exposing (..)
 
 -- CONSTANTS
 
@@ -41,7 +41,6 @@ type alias Model =
     { username : String
     , login : Login.Model
     , chat : Chat.Model
-    , soundplayer : Bool
     , viewType : ViewType
     , debugMsg : String
     , phxSocket : Socket.Socket Msg
@@ -54,7 +53,7 @@ type alias Flags = String
 init : Flags -> (Model, Cmd Msg)
 init loc =
     ( Model
-        "" Login.init Chat.init False Login ""
+        "" Login.init Chat.init Login ""
         (initPhxSocket loc) Material.model Snackbar.model
     , Cmd.none )
 
@@ -73,8 +72,6 @@ type Msg
     | ChatMsg Chat.Msg
     | SendChat Value
     | ReceiveChatMessage Value
-
-    | SPMsg SP.Msg
     | SendSound Value
     | MyChannelSuccess Value
 
@@ -86,7 +83,7 @@ type Msg
     -- Mdl
     | Mdl (Material.Msg Msg)
     | SnackbarMsg (Snackbar.Msg ())
-    | ErrorMsg String
+    | Toast String
     -- | NoOp
 
 
@@ -100,26 +97,21 @@ update message model =
                 res1 = ({ model | login = m1 }, Cmd.map LoginMsg c1)
             in bind' res1 update maybeMsg
         Signin username ->
-            joinChat { model | username = username } `bind` makeIndividualChannel
+            { model | username = username }
+            |> joinChat
+            |> bind makeIndividualChannel
         JoinLobby val ->
             { model | viewType = Chat }
             |> update (ChatMsg <| Chat.JoinLobby val)
-        MyChannelSuccess _ ->
-            { model | soundplayer = True } ! []
         -- Chat component
         ChatMsg msg ->
             let
-                (m1, c1, maybeMsg) = Chat.update SendChat msg model.chat
+                config = Chat.Config SendChat Toast SendSound
+                (m1, c1, maybeMsg) = Chat.update config msg model.chat
                 res1 = ({ model | chat = m1 }, Cmd.map ChatMsg c1)
             in bind' res1 update maybeMsg
         SendChat payload ->
             pushSocket "new_msg" lobby PhoenixMsg payload model
-        -- soundplayer component
-        SPMsg msg ->
-            let
-                config = SP.Config model.username SendSound ErrorMsg
-                (c1, maybeMsg) = SP.update config msg
-            in bind' (model, Cmd.map SPMsg c1) update maybeMsg
         SendSound payload ->
             pushSocket "send_sound" (myRoom model.username) PhoenixMsg payload model
         -- Other
@@ -130,22 +122,25 @@ update message model =
             , Cmd.map PhoenixMsg phxCmd
             )
         JoinError channel body ->
-            update (ErrorMsg <| channel ++ ": " ++ toString body) model
+            update (Toast <| channel ++ ": " ++ toString body) model
+
         Mdl msg ->
             Material.update msg model
         SnackbarMsg msg ->
             Snackbar.update msg model.errors
                 |> map1st (\s -> { model | errors = s })
                 |> map2nd (Cmd.map SnackbarMsg)
-        ErrorMsg error ->
+        Toast error ->
             let
-                _ = Debug.log "Adding an error" error
+                _ = Debug.log "**Toast: " error
                 -- snackbar : a -> String -> String -> Contents a
-                snack =
+                -- snack =
                     -- Snackbar.snackbar () "Error" error
-                    Snackbar.Contents "Error" (Just error) () 6000 250
+                    -- Snackbar.Contents "Error" (Just error) () 6000 250
+                toast =
+                    Snackbar.Contents error Nothing () 6000 250
                 -- add : Contents a -> Model a -> (Model a, Cmd (Msg a))
-                (errors, c1) = Snackbar.add snack model.errors
+                (errors, c1) = Snackbar.add toast model.errors
             in
             ( { model | errors = errors }
             , Cmd.map SnackbarMsg c1
@@ -176,24 +171,8 @@ viewBody model =
         Login ->
             Login.view model.login |> Html.map LoginMsg
         Chat ->
-            viewApp model
+            Chat.view model.chat |> Html.map ChatMsg
 
-viewApp model =
-    grid []
-        [ cell
-            [ size All 6
-            , stretch
-            , cs "chat"
-            ] <|
-            (Chat.view model.chat |> L.map (Html.map ChatMsg))
-        -- , cell
-        --     [ size All 6
-        --     , stretch
-        --     ]
-        --     [ SP.view Mdl model.mdl model.chat.members model.soundplayer
-        --         |> Html.map SPMsg
-        --     ]
-        ]
 -- Commands
 
 joinChat : Model -> (Model, Cmd Msg)
@@ -207,26 +186,10 @@ joinChat model =
 
 makeIndividualChannel : Model -> (Model, Cmd Msg)
 makeIndividualChannel model =
-    let
-        payload = null
-        indivRoom = myRoom model.username
-    in joinChannel payload indivRoom MyChannelSuccess (JoinError indivRoom)
-        [ ("receive_sound", SPMsg << SP.Receive)
+    let indivRoom = myRoom model.username
+    in joinChannel null indivRoom (ChatMsg << Chat.LoadSoundPlayer) (JoinError indivRoom)
+        [ ("receive_sound", ChatMsg << Chat.Receive)
         ] PhoenixMsg model
 
 myRoom username =
     "user:" ++ username
-
-bind : (Model, Cmd Msg) -> (Model -> (Model, Cmd Msg)) -> (Model, Cmd Msg)
-bind (m1, c1) f =
-    let (m2, c2) = f m1
-    in (m2, Cmd.batch [c1, c2])
-
-bind' : (Model, Cmd msg) -> (msg -> Model -> (Model, Cmd msg)) -> Maybe msg -> (Model, Cmd msg)
-bind' (md1, c1) update mms =
-    case mms of
-        Just ms ->
-            let (md2, c2) = update ms md1
-            in (md2, Cmd.batch [c1, c2])
-        Nothing ->
-            (md1, c1)

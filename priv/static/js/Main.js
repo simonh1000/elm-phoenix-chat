@@ -15504,8 +15504,103 @@ var _fbonetti$elm_phoenix_socket$Phoenix_Socket$listen = F2(
 				]));
 	});
 
-var _user$project$Decoders$receiveSoundDecoder = A2(_elm_lang$core$Json_Decode_ops[':='], 'body', _elm_lang$core$Json_Decode$string);
-var _user$project$Decoders$userNamesDecoder = _elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string);
+var _user$project$Common$bind = F2(
+	function (f, _p0) {
+		var _p1 = _p0;
+		var _p2 = f(_p1._0);
+		var m2 = _p2._0;
+		var c2 = _p2._1;
+		return {
+			ctor: '_Tuple2',
+			_0: m2,
+			_1: _elm_lang$core$Platform_Cmd$batch(
+				_elm_lang$core$Native_List.fromArray(
+					[_p1._1, c2]))
+		};
+	});
+var _user$project$Common$bind$ = F3(
+	function (initialValues, update, mms) {
+		var _p3 = mms;
+		if (_p3.ctor === 'Just') {
+			return A2(
+				_user$project$Common$bind,
+				update(_p3._0),
+				initialValues);
+		} else {
+			return initialValues;
+		}
+	});
+var _user$project$Common$nothing = function (m) {
+	return {ctor: '_Tuple3', _0: m, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
+};
+
+var _user$project$SocketHelpers$pushSocket = F5(
+	function (msgType, topic, phxMsg, payload, model) {
+		var push = A2(
+			_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
+			payload,
+			A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, msgType, topic));
+		var _p0 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
+		var socket$ = _p0._0;
+		var socketCmd = _p0._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{phxSocket: socket$}),
+			_1: A2(_elm_lang$core$Platform_Cmd$map, phxMsg, socketCmd)
+		};
+	});
+var _user$project$SocketHelpers$joinChannel = F7(
+	function (payload, roomname, joinSuccessMsg, joinErrorMsg, hooks, phxMsg, model) {
+		var channel = A2(
+			_fbonetti$elm_phoenix_socket$Phoenix_Channel$onError,
+			joinErrorMsg,
+			A2(
+				_fbonetti$elm_phoenix_socket$Phoenix_Channel$onJoin,
+				joinSuccessMsg,
+				A2(
+					_fbonetti$elm_phoenix_socket$Phoenix_Channel$withPayload,
+					payload,
+					_fbonetti$elm_phoenix_socket$Phoenix_Channel$init(roomname))));
+		var _p1 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$join, channel, model.phxSocket);
+		var socket$ = _p1._0;
+		var cmd = _p1._1;
+		var socket$$ = A3(
+			_elm_lang$core$List$foldl,
+			function (_p2) {
+				var _p3 = _p2;
+				return A3(_fbonetti$elm_phoenix_socket$Phoenix_Socket$on, _p3._0, roomname, _p3._1);
+			},
+			socket$,
+			hooks);
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{phxSocket: socket$$}),
+			_1: A2(_elm_lang$core$Platform_Cmd$map, phxMsg, cmd)
+		};
+	});
+var _user$project$SocketHelpers$socketUrl = '/socket/websocket';
+var _user$project$SocketHelpers$init = function (loc) {
+	return _fbonetti$elm_phoenix_socket$Phoenix_Socket$withDebug(
+		_fbonetti$elm_phoenix_socket$Phoenix_Socket$init(
+			A2(_elm_lang$core$Basics_ops['++'], loc, _user$project$SocketHelpers$socketUrl)));
+};
+
+var _user$project$Decoders$receiveSoundDecoder = A3(
+	_elm_lang$core$Json_Decode$object2,
+	F2(
+		function (v0, v1) {
+			return {ctor: '_Tuple2', _0: v0, _1: v1};
+		}),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'sender', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'body', _elm_lang$core$Json_Decode$string));
+var _user$project$Decoders$userNamesDecoder = A2(
+	_elm_lang$core$Json_Decode_ops[':='],
+	'users',
+	_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string));
 var _user$project$Decoders$newMemberDecoder = A3(
 	_elm_lang$core$Json_Decode$object2,
 	F2(
@@ -15513,7 +15608,7 @@ var _user$project$Decoders$newMemberDecoder = A3(
 			return {ctor: '_Tuple2', _0: v0, _1: v1};
 		}),
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'username', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'users', _user$project$Decoders$userNamesDecoder));
+	_user$project$Decoders$userNamesDecoder);
 var _user$project$Decoders$messageDecoder$ = F2(
 	function (constructor, dec) {
 		return A3(
@@ -15606,12 +15701,21 @@ var _user$project$Login$loginCard = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						A2(
-						_elm_lang$html$Html$h2,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
+						_debois$elm_mdl$Material_Options$div,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html$text('Login')
+								_debois$elm_mdl$Material_Color$text(_debois$elm_mdl$Material_Color$white)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$h2,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html$text('Login')
+									]))
 							]))
 					])),
 				A2(
@@ -15620,7 +15724,6 @@ var _user$project$Login$loginCard = function (model) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Enter a username'),
 						A2(
 						_elm_lang$html$Html$form,
 						_elm_lang$core$Native_List.fromArray(
@@ -15667,32 +15770,53 @@ var _user$project$Login$view = function (model) {
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_debois$elm_mdl$Material_Grid$grid,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_debois$elm_mdl$Material_Grid$cell,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$Desktop, 6),
-								A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$Phone, 12),
-								A2(_debois$elm_mdl$Material_Grid$offset, _debois$elm_mdl$Material_Grid$Desktop, 3)
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_user$project$Login$loginCard(model)
-							]))
-					]))
+				_user$project$Login$loginCard(model)
 			]));
 };
 
-var _user$project$Common$nothing = function (m) {
-	return {ctor: '_Tuple3', _0: m, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
-};
+var _user$project$Ports$player = _elm_lang$core$Native_Platform.outgoingPort(
+	'player',
+	function (v) {
+		return v;
+	});
 
+var _user$project$Chat$encodeSendSound = F2(
+	function (username, soundfile) {
+		return _elm_lang$core$Json_Encode$object(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'target',
+					_1: _elm_lang$core$Json_Encode$string(username)
+				},
+					{
+					ctor: '_Tuple2',
+					_0: 'soundfile',
+					_1: _elm_lang$core$Json_Encode$string(soundfile)
+				}
+				]));
+	});
+var _user$project$Chat$membersView = function (users) {
+	var item = function (t) {
+		return A3(
+			_debois$elm_mdl$Material_Options$styled,
+			_elm_lang$html$Html$p,
+			_elm_lang$core$Native_List.fromArray(
+				[_debois$elm_mdl$Material_Typography$subhead]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(t)
+				]));
+	};
+	return A2(
+		_elm_lang$html$Html$ul,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('users-list')
+			]),
+		A2(_elm_lang$core$List$map, item, users));
+};
 var _user$project$Chat$viewMessage = function (msg) {
 	return A2(
 		_debois$elm_mdl$Material_List$li,
@@ -15700,6 +15824,24 @@ var _user$project$Chat$viewMessage = function (msg) {
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
+				A2(
+				_debois$elm_mdl$Material_Options$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_debois$elm_mdl$Material_Options$center,
+						_debois$elm_mdl$Material_Color$background(
+						A2(_debois$elm_mdl$Material_Color$color, _debois$elm_mdl$Material_Color$Green, _debois$elm_mdl$Material_Color$S500)),
+						_debois$elm_mdl$Material_Color$text(_debois$elm_mdl$Material_Color$accentContrast),
+						_debois$elm_mdl$Material_Typography$title,
+						A2(_debois$elm_mdl$Material_Options$css, 'width', '36px'),
+						A2(_debois$elm_mdl$Material_Options$css, 'height', '36px'),
+						A2(_debois$elm_mdl$Material_Options$css, 'margin-right', '2rem')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						A2(_elm_lang$core$String$left, 1, msg.userName))
+					])),
 				A2(
 				_debois$elm_mdl$Material_List$content,
 				_elm_lang$core$Native_List.fromArray(
@@ -15731,54 +15873,32 @@ var _user$project$Chat$viewMessage = function (msg) {
 					]))
 			]));
 };
-var _user$project$Chat$membersView = function (users) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('users-list')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$ul,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				A2(
-					_elm_lang$core$List$map,
-					function (m) {
-						return A2(
-							_elm_lang$html$Html$li,
-							_elm_lang$core$Native_List.fromArray(
-								[]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html$text(m)
-								]));
-					},
-					users))
-			]));
-};
-var _user$project$Chat$Model = F4(
-	function (a, b, c, d) {
-		return {messages: a, newMessage: b, members: c, mdl: d};
+var _user$project$Chat$Model = F5(
+	function (a, b, c, d, e) {
+		return {messages: a, newMessage: b, members: c, soundplayer: d, mdl: e};
 	});
-var _user$project$Chat$init = A4(
+var _user$project$Chat$init = A5(
 	_user$project$Chat$Model,
 	_elm_lang$core$Native_List.fromArray(
 		[]),
 	'',
 	_elm_lang$core$Native_List.fromArray(
 		[]),
+	false,
 	_debois$elm_mdl$Material$model);
 var _user$project$Chat$Message = F2(
 	function (a, b) {
 		return {userName: a, body: b};
 	});
 var _user$project$Chat$update = F3(
-	function (sendMsg, message, model) {
+	function (config, message, model) {
 		var _p0 = message;
 		switch (_p0.ctor) {
+			case 'LoadSoundPlayer':
+				return _user$project$Common$nothing(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{soundplayer: true}));
 			case 'JoinLobby':
 				var _p1 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$userNamesDecoder, _p0._0);
 				if (_p1.ctor === 'Ok') {
@@ -15787,7 +15907,14 @@ var _user$project$Chat$update = F3(
 							model,
 							{members: _p1._0}));
 				} else {
-					return _user$project$Common$nothing(model);
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(
+								A2(_elm_lang$core$Basics_ops['++'], 'Join: ', _p1._0)))
+					};
 				}
 			case 'NewMessage':
 				var _p2 = A2(
@@ -15803,41 +15930,55 @@ var _user$project$Chat$update = F3(
 								newMessage: ''
 							}));
 				} else {
-					var _p3 = A2(_elm_lang$core$Debug$log, 'error', _p2._0);
-					return _user$project$Common$nothing(model);
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(
+								A2(_elm_lang$core$Basics_ops['++'], 'NewMessage: ', _p2._0)))
+					};
 				}
 			case 'NewMember':
-				var _p4 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$newMemberDecoder, _p0._0);
-				if (_p4.ctor === 'Ok') {
+				var _p3 = A2(
+					_elm_lang$core$Json_Decode$decodeValue,
+					_user$project$Decoders$newMemberDecoder,
+					A2(_elm_lang$core$Debug$log, '*NewMember', _p0._0));
+				if (_p3.ctor === 'Ok') {
 					var newMessage = A2(
 						_user$project$Chat$Message,
 						'system',
-						A2(_elm_lang$core$Basics_ops['++'], _p4._0._0, ' joined'));
+						A2(_elm_lang$core$Basics_ops['++'], _p3._0._0, ' joined'));
 					return _user$project$Common$nothing(
 						_elm_lang$core$Native_Utils.update(
 							model,
 							{
 								messages: A2(_elm_lang$core$List_ops['::'], newMessage, model.messages),
-								members: _p4._0._1
+								members: _p3._0._1
 							}));
 				} else {
-					var _p5 = A2(_elm_lang$core$Debug$log, 'error', _p4._0);
-					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(
+								A2(_elm_lang$core$Basics_ops['++'], 'NewMember: ', _p3._0)))
+					};
 				}
 			case 'LostMember':
-				var _p6 = A2(
+				var _p4 = A2(
 					_elm_lang$core$Json_Decode$decodeValue,
 					_user$project$Decoders$messageDecoder(_user$project$Chat$Message),
 					_p0._0);
-				if (_p6.ctor === 'Ok') {
-					var _p7 = _p6._0;
+				if (_p4.ctor === 'Ok') {
+					var _p5 = _p4._0;
 					var newMessage = A2(
 						_user$project$Chat$Message,
 						'system',
-						A2(_elm_lang$core$Basics_ops['++'], _p7.userName, ' left'));
-					return {
-						ctor: '_Tuple3',
-						_0: _elm_lang$core$Native_Utils.update(
+						A2(_elm_lang$core$Basics_ops['++'], _p5.userName, ' left'));
+					return _user$project$Common$nothing(
+						_elm_lang$core$Native_Utils.update(
 							model,
 							{
 								messages: A2(_elm_lang$core$List_ops['::'], newMessage, model.messages),
@@ -15846,15 +15987,17 @@ var _user$project$Chat$update = F3(
 									F2(
 										function (x, y) {
 											return !_elm_lang$core$Native_Utils.eq(x, y);
-										})(_p7.userName),
+										})(_p5.userName),
 									model.members)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none,
-						_2: _elm_lang$core$Maybe$Nothing
-					};
+							}));
 				} else {
-					var _p8 = A2(_elm_lang$core$Debug$log, 'error', _p6._0);
-					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: _elm_lang$core$Maybe$Nothing};
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(_p4._0))
+					};
 				}
 			case 'UpdateInput':
 				return {
@@ -15865,7 +16008,7 @@ var _user$project$Chat$update = F3(
 					_1: _elm_lang$core$Platform_Cmd$none,
 					_2: _elm_lang$core$Maybe$Nothing
 				};
-			case 'Send':
+			case 'SendChat':
 				var payload = _elm_lang$core$Json_Encode$object(
 					_elm_lang$core$Native_List.fromArray(
 						[
@@ -15880,28 +16023,137 @@ var _user$project$Chat$update = F3(
 					_0: model,
 					_1: _elm_lang$core$Platform_Cmd$none,
 					_2: _elm_lang$core$Maybe$Just(
-						sendMsg(payload))
+						config.sendMsg(payload))
+				};
+			case 'Receive':
+				var _p6 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$receiveSoundDecoder, _p0._0);
+				if (_p6.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _user$project$Ports$player(_p6._0._1),
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(
+								A2(_elm_lang$core$Basics_ops['++'], 'LOL from ', _p6._0._0)))
+					};
+				} else {
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _elm_lang$core$Maybe$Just(
+							config.toastMsg(_p6._0))
+					};
+				}
+			case 'SendSound':
+				var payload = A2(_user$project$Chat$encodeSendSound, _p0._0, _p0._1);
+				return {
+					ctor: '_Tuple3',
+					_0: model,
+					_1: _elm_lang$core$Platform_Cmd$none,
+					_2: _elm_lang$core$Maybe$Just(
+						config.sendSoundMsg(payload))
 				};
 			default:
-				var _p9 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
-				var m = _p9._0;
-				var c = _p9._1;
+				var _p7 = A2(_debois$elm_mdl$Material$update, _p0._0, model);
+				var m = _p7._0;
+				var c = _p7._1;
 				return {ctor: '_Tuple3', _0: m, _1: c, _2: _elm_lang$core$Maybe$Nothing};
 		}
+	});
+var _user$project$Chat$Config = F3(
+	function (a, b, c) {
+		return {sendMsg: a, toastMsg: b, sendSoundMsg: c};
 	});
 var _user$project$Chat$Mdl = function (a) {
 	return {ctor: 'Mdl', _0: a};
 };
+var _user$project$Chat$Receive = function (a) {
+	return {ctor: 'Receive', _0: a};
+};
+var _user$project$Chat$SendSound = F2(
+	function (a, b) {
+		return {ctor: 'SendSound', _0: a, _1: b};
+	});
+var _user$project$Chat$viewSoundPlayer = function (_p8) {
+	var _p9 = _p8;
+	var radioToggle = F2(
+		function (idx, member) {
+			return A2(
+				_elm_lang$html$Html$span,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A5(
+						_debois$elm_mdl$Material_Button$render,
+						_user$project$Chat$Mdl,
+						_elm_lang$core$Native_List.fromArray(
+							[3, idx]),
+						_p9.mdl,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_debois$elm_mdl$Material_Button$ripple,
+								_debois$elm_mdl$Material_Button$primary,
+								_debois$elm_mdl$Material_Button$raised,
+								_debois$elm_mdl$Material_Button$onClick(
+								A2(_user$project$Chat$SendSound, member, 'guitar'))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text(member)
+							]))
+					]));
+		});
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$h3,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Surprise your colleagues')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				A2(_elm_lang$core$List$indexedMap, radioToggle, _p9.members))
+			]));
+};
+var _user$project$Chat$soundplayerCmp = function (model) {
+	return A2(
+		_debois$elm_mdl$Material_Grid$cell,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
+				_debois$elm_mdl$Material_Grid$stretch,
+				_debois$elm_mdl$Material_Options$cs('sound-player')
+			]),
+		model.soundplayer ? _elm_lang$core$Native_List.fromArray(
+			[
+				_user$project$Chat$viewSoundPlayer(model)
+			]) : _elm_lang$core$Native_List.fromArray(
+			[
+				_user$project$Chat$membersView(model.members),
+				_elm_lang$html$Html$text('More functionality will become available when the user-channel is available')
+			]));
+};
 var _user$project$Chat$UpdateInput = function (a) {
 	return {ctor: 'UpdateInput', _0: a};
 };
-var _user$project$Chat$Send = {ctor: 'Send'};
+var _user$project$Chat$SendChat = {ctor: 'SendChat'};
 var _user$project$Chat$inputView = function (model) {
 	return A2(
 		_elm_lang$html$Html$form,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Events$onSubmit(_user$project$Chat$Send),
+				_elm_lang$html$Html_Events$onSubmit(_user$project$Chat$SendChat),
 				_elm_lang$html$Html_Attributes$class('message-input')
 			]),
 		_elm_lang$core$Native_List.fromArray(
@@ -15910,11 +16162,11 @@ var _user$project$Chat$inputView = function (model) {
 				_debois$elm_mdl$Material_Textfield$render,
 				_user$project$Chat$Mdl,
 				_elm_lang$core$Native_List.fromArray(
-					[0]),
+					[2, 0]),
 				model.mdl,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_debois$elm_mdl$Material_Textfield$label('New message'),
+						_debois$elm_mdl$Material_Textfield$label('Type message'),
 						_debois$elm_mdl$Material_Textfield$floatingLabel,
 						_debois$elm_mdl$Material_Textfield$value(model.newMessage),
 						_debois$elm_mdl$Material_Textfield$onInput(_user$project$Chat$UpdateInput)
@@ -15923,35 +16175,55 @@ var _user$project$Chat$inputView = function (model) {
 				_debois$elm_mdl$Material_Button$render,
 				_user$project$Chat$Mdl,
 				_elm_lang$core$Native_List.fromArray(
-					[1]),
+					[2, 1]),
 				model.mdl,
 				_elm_lang$core$Native_List.fromArray(
 					[
+						_debois$elm_mdl$Material_Button$fab,
+						_debois$elm_mdl$Material_Button$colored,
 						_debois$elm_mdl$Material_Button$ripple,
 						_elm_lang$core$Native_Utils.eq(model.newMessage, '') ? _debois$elm_mdl$Material_Button$disabled : _debois$elm_mdl$Material_Button$raised
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Send')
+						_debois$elm_mdl$Material_Icon$i('send')
 					]))
 			]));
 };
+var _user$project$Chat$chatComponent = function (model) {
+	return A2(
+		_debois$elm_mdl$Material_Grid$cell,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
+				_debois$elm_mdl$Material_Grid$stretch,
+				_debois$elm_mdl$Material_Options$cs('chat')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('messages')
+					]),
+				A2(
+					_elm_lang$core$List$map,
+					_user$project$Chat$viewMessage,
+					_elm_lang$core$List$reverse(model.messages))),
+				_user$project$Chat$inputView(model)
+			]));
+};
 var _user$project$Chat$view = function (model) {
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			_user$project$Chat$membersView(model.members),
-			A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('messages')
-				]),
-			A2(
-				_elm_lang$core$List$map,
-				_user$project$Chat$viewMessage,
-				_elm_lang$core$List$reverse(model.messages))),
-			_user$project$Chat$inputView(model)
-		]);
+	return A2(
+		_debois$elm_mdl$Material_Grid$grid,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_user$project$Chat$chatComponent(model),
+				_user$project$Chat$soundplayerCmp(model)
+			]));
 };
 var _user$project$Chat$LostMember = function (a) {
 	return {ctor: 'LostMember', _0: a};
@@ -15962,201 +16234,13 @@ var _user$project$Chat$NewMember = function (a) {
 var _user$project$Chat$NewMessage = function (a) {
 	return {ctor: 'NewMessage', _0: a};
 };
+var _user$project$Chat$LoadSoundPlayer = function (a) {
+	return {ctor: 'LoadSoundPlayer', _0: a};
+};
 var _user$project$Chat$JoinLobby = function (a) {
 	return {ctor: 'JoinLobby', _0: a};
 };
 
-var _user$project$Ports$player = _elm_lang$core$Native_Platform.outgoingPort(
-	'player',
-	function (v) {
-		return v;
-	});
-
-var _user$project$SoundPlayer$encodeSendSound = F2(
-	function (username, soundfile) {
-		return _elm_lang$core$Json_Encode$object(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					{
-					ctor: '_Tuple2',
-					_0: 'target',
-					_1: _elm_lang$core$Json_Encode$string(username)
-				},
-					{
-					ctor: '_Tuple2',
-					_0: 'soundfile',
-					_1: _elm_lang$core$Json_Encode$string(soundfile)
-				}
-				]));
-	});
-var _user$project$SoundPlayer$update = F2(
-	function (config, message) {
-		var _p0 = A2(_elm_lang$core$Debug$log, 'SP.update', message);
-		if (_p0.ctor === 'Receive') {
-			var _p1 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoders$receiveSoundDecoder, _p0._0);
-			if (_p1.ctor === 'Ok') {
-				return {
-					ctor: '_Tuple2',
-					_0: _user$project$Ports$player(_p1._0),
-					_1: _elm_lang$core$Maybe$Nothing
-				};
-			} else {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Platform_Cmd$none,
-					_1: _elm_lang$core$Maybe$Just(
-						config.errorMsg(
-							_elm_lang$core$Basics$toString(_p1._0)))
-				};
-			}
-		} else {
-			var payload = A2(_user$project$SoundPlayer$encodeSendSound, _p0._0, _p0._1);
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Platform_Cmd$none,
-				_1: _elm_lang$core$Maybe$Just(
-					config.sendMsg(payload))
-			};
-		}
-	});
-var _user$project$SoundPlayer$PlayCommand = F2(
-	function (a, b) {
-		return {target: a, soundfile: b};
-	});
-var _user$project$SoundPlayer$Config = F3(
-	function (a, b, c) {
-		return {username: a, sendMsg: b, errorMsg: c};
-	});
-var _user$project$SoundPlayer$Receive = function (a) {
-	return {ctor: 'Receive', _0: a};
-};
-var _user$project$SoundPlayer$Send = F2(
-	function (a, b) {
-		return {ctor: 'Send', _0: a, _1: b};
-	});
-var _user$project$SoundPlayer$viewMain = F3(
-	function (mdlMsg, mdlModel, users) {
-		var radioToggle = F2(
-			function (idx, user) {
-				return A5(
-					_debois$elm_mdl$Material_Button$render,
-					mdlMsg,
-					_elm_lang$core$Native_List.fromArray(
-						[3, idx]),
-					mdlModel,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_debois$elm_mdl$Material_Button$ripple,
-							_debois$elm_mdl$Material_Button$raised,
-							_debois$elm_mdl$Material_Button$onClick(
-							A2(_user$project$SoundPlayer$Send, user, 'guitar'))
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(user)
-						]));
-			});
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			A2(_elm_lang$core$List$indexedMap, radioToggle, users));
-	});
-var _user$project$SoundPlayer$view = F4(
-	function (mdlMsg, mdlModel, users, model) {
-		return model ? A3(_user$project$SoundPlayer$viewMain, mdlMsg, mdlModel, users) : _elm_lang$html$Html$text('This component will shown when the user-channel is available');
-	});
-
-var _user$project$SocketHelpers$pushSocket = F5(
-	function (msgType, topic, phxMsg, payload, model) {
-		var push = A2(
-			_fbonetti$elm_phoenix_socket$Phoenix_Push$withPayload,
-			payload,
-			A2(_fbonetti$elm_phoenix_socket$Phoenix_Push$init, msgType, topic));
-		var _p0 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$push, push, model.phxSocket);
-		var socket$ = _p0._0;
-		var socketCmd = _p0._1;
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
-				{phxSocket: socket$}),
-			_1: A2(_elm_lang$core$Platform_Cmd$map, phxMsg, socketCmd)
-		};
-	});
-var _user$project$SocketHelpers$joinChannel = F7(
-	function (payload, roomname, joinSuccessMsg, joinErrorMsg, hooks, phxMsg, model) {
-		var channel = A2(
-			_fbonetti$elm_phoenix_socket$Phoenix_Channel$onError,
-			joinErrorMsg,
-			A2(
-				_fbonetti$elm_phoenix_socket$Phoenix_Channel$onJoin,
-				joinSuccessMsg,
-				A2(
-					_fbonetti$elm_phoenix_socket$Phoenix_Channel$withPayload,
-					payload,
-					_fbonetti$elm_phoenix_socket$Phoenix_Channel$init(roomname))));
-		var _p1 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$join, channel, model.phxSocket);
-		var socket$ = _p1._0;
-		var cmd = _p1._1;
-		var socket$$ = A3(
-			_elm_lang$core$List$foldl,
-			function (_p2) {
-				var _p3 = _p2;
-				return A3(_fbonetti$elm_phoenix_socket$Phoenix_Socket$on, _p3._0, roomname, _p3._1);
-			},
-			socket$,
-			hooks);
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
-				{phxSocket: socket$$}),
-			_1: A2(_elm_lang$core$Platform_Cmd$map, phxMsg, cmd)
-		};
-	});
-var _user$project$SocketHelpers$socketUrl = '/socket/websocket';
-var _user$project$SocketHelpers$init = function (loc) {
-	return _fbonetti$elm_phoenix_socket$Phoenix_Socket$withDebug(
-		_fbonetti$elm_phoenix_socket$Phoenix_Socket$init(
-			A2(_elm_lang$core$Basics_ops['++'], loc, _user$project$SocketHelpers$socketUrl)));
-};
-
-var _user$project$App$bind$ = F3(
-	function (_p0, update, mms) {
-		var _p1 = _p0;
-		var _p5 = _p1._0;
-		var _p4 = _p1._1;
-		var _p2 = mms;
-		if (_p2.ctor === 'Just') {
-			var _p3 = A2(update, _p2._0, _p5);
-			var md2 = _p3._0;
-			var c2 = _p3._1;
-			return {
-				ctor: '_Tuple2',
-				_0: md2,
-				_1: _elm_lang$core$Platform_Cmd$batch(
-					_elm_lang$core$Native_List.fromArray(
-						[_p4, c2]))
-			};
-		} else {
-			return {ctor: '_Tuple2', _0: _p5, _1: _p4};
-		}
-	});
-var _user$project$App$bind = F2(
-	function (_p6, f) {
-		var _p7 = _p6;
-		var _p8 = f(_p7._0);
-		var m2 = _p8._0;
-		var c2 = _p8._1;
-		return {
-			ctor: '_Tuple2',
-			_0: m2,
-			_1: _elm_lang$core$Platform_Cmd$batch(
-				_elm_lang$core$Native_List.fromArray(
-					[_p7._1, c2]))
-		};
-	});
 var _user$project$App$myRoom = function (username) {
 	return A2(_elm_lang$core$Basics_ops['++'], 'user:', username);
 };
@@ -16165,21 +16249,20 @@ var _user$project$App$initPhxSocket = function (loc) {
 };
 var _user$project$App$lobby = 'room:lobby';
 var _user$project$App$serverUrl = '/api/default';
-var _user$project$App$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {username: a, login: b, chat: c, soundplayer: d, viewType: e, debugMsg: f, phxSocket: g, mdl: h, errors: i};
+var _user$project$App$Model = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {username: a, login: b, chat: c, viewType: d, debugMsg: e, phxSocket: f, mdl: g, errors: h};
 	});
 var _user$project$App$Chat = {ctor: 'Chat'};
 var _user$project$App$Login = {ctor: 'Login'};
 var _user$project$App$init = function (loc) {
 	return {
 		ctor: '_Tuple2',
-		_0: A9(
+		_0: A8(
 			_user$project$App$Model,
 			'',
 			_user$project$Login$init,
 			_user$project$Chat$init,
-			false,
 			_user$project$App$Login,
 			'',
 			_user$project$App$initPhxSocket(loc),
@@ -16188,8 +16271,8 @@ var _user$project$App$init = function (loc) {
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
 };
-var _user$project$App$ErrorMsg = function (a) {
-	return {ctor: 'ErrorMsg', _0: a};
+var _user$project$App$Toast = function (a) {
+	return {ctor: 'Toast', _0: a};
 };
 var _user$project$App$SnackbarMsg = function (a) {
 	return {ctor: 'SnackbarMsg', _0: a};
@@ -16213,32 +16296,6 @@ var _user$project$App$MyChannelSuccess = function (a) {
 var _user$project$App$SendSound = function (a) {
 	return {ctor: 'SendSound', _0: a};
 };
-var _user$project$App$SPMsg = function (a) {
-	return {ctor: 'SPMsg', _0: a};
-};
-var _user$project$App$makeIndividualChannel = function (model) {
-	var indivRoom = _user$project$App$myRoom(model.username);
-	var payload = _elm_lang$core$Json_Encode$null;
-	return A7(
-		_user$project$SocketHelpers$joinChannel,
-		payload,
-		indivRoom,
-		_user$project$App$MyChannelSuccess,
-		_user$project$App$JoinError(indivRoom),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: 'receive_sound',
-				_1: function (_p9) {
-					return _user$project$App$SPMsg(
-						_user$project$SoundPlayer$Receive(_p9));
-				}
-			}
-			]),
-		_user$project$App$PhoenixMsg,
-		model);
-};
 var _user$project$App$ReceiveChatMessage = function (a) {
 	return {ctor: 'ReceiveChatMessage', _0: a};
 };
@@ -16248,26 +16305,30 @@ var _user$project$App$SendChat = function (a) {
 var _user$project$App$ChatMsg = function (a) {
 	return {ctor: 'ChatMsg', _0: a};
 };
-var _user$project$App$viewApp = function (model) {
-	return A2(
-		_debois$elm_mdl$Material_Grid$grid,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
+var _user$project$App$makeIndividualChannel = function (model) {
+	var indivRoom = _user$project$App$myRoom(model.username);
+	return A7(
+		_user$project$SocketHelpers$joinChannel,
+		_elm_lang$core$Json_Encode$null,
+		indivRoom,
+		function (_p0) {
+			return _user$project$App$ChatMsg(
+				_user$project$Chat$LoadSoundPlayer(_p0));
+		},
+		_user$project$App$JoinError(indivRoom),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_debois$elm_mdl$Material_Grid$cell,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
-						_debois$elm_mdl$Material_Grid$stretch,
-						_debois$elm_mdl$Material_Options$cs('chat')
-					]),
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$html$Html_App$map(_user$project$App$ChatMsg),
-					_user$project$Chat$view(model.chat)))
-			]));
+				{
+				ctor: '_Tuple2',
+				_0: 'receive_sound',
+				_1: function (_p1) {
+					return _user$project$App$ChatMsg(
+						_user$project$Chat$Receive(_p1));
+				}
+			}
+			]),
+		_user$project$App$PhoenixMsg,
+		model);
 };
 var _user$project$App$JoinLobby = function (a) {
 	return {ctor: 'JoinLobby', _0: a};
@@ -16285,25 +16346,25 @@ var _user$project$App$joinChat = function (model) {
 				{
 				ctor: '_Tuple2',
 				_0: 'new_msg',
-				_1: function (_p10) {
+				_1: function (_p2) {
 					return _user$project$App$ChatMsg(
-						_user$project$Chat$NewMessage(_p10));
+						_user$project$Chat$NewMessage(_p2));
 				}
 			},
 				{
 				ctor: '_Tuple2',
 				_0: 'new_member',
-				_1: function (_p11) {
+				_1: function (_p3) {
 					return _user$project$App$ChatMsg(
-						_user$project$Chat$NewMember(_p11));
+						_user$project$Chat$NewMember(_p3));
 				}
 			},
 				{
 				ctor: '_Tuple2',
 				_0: 'lost_member',
-				_1: function (_p12) {
+				_1: function (_p4) {
 					return _user$project$App$ChatMsg(
-						_user$project$Chat$LostMember(_p12));
+						_user$project$Chat$LostMember(_p4));
 				}
 			}
 			]),
@@ -16320,13 +16381,13 @@ var _user$project$App$update = F2(
 	function (message, model) {
 		update:
 		while (true) {
-			var _p13 = message;
-			switch (_p13.ctor) {
+			var _p5 = message;
+			switch (_p5.ctor) {
 				case 'LoginMsg':
-					var _p14 = A3(_user$project$Login$update, _user$project$App$Signin, _p13._0, model.login);
-					var m1 = _p14._0;
-					var c1 = _p14._1;
-					var maybeMsg = _p14._2;
+					var _p6 = A3(_user$project$Login$update, _user$project$App$Signin, _p5._0, model.login);
+					var m1 = _p6._0;
+					var c1 = _p6._1;
+					var maybeMsg = _p6._2;
 					var res1 = {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -16334,37 +16395,30 @@ var _user$project$App$update = F2(
 							{login: m1}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$LoginMsg, c1)
 					};
-					return A3(_user$project$App$bind$, res1, _user$project$App$update, maybeMsg);
+					return A3(_user$project$Common$bind$, res1, _user$project$App$update, maybeMsg);
 				case 'Signin':
 					return A2(
-						_user$project$App$bind,
+						_user$project$Common$bind,
+						_user$project$App$makeIndividualChannel,
 						_user$project$App$joinChat(
 							_elm_lang$core$Native_Utils.update(
 								model,
-								{username: _p13._0})),
-						_user$project$App$makeIndividualChannel);
+								{username: _p5._0})));
 				case 'JoinLobby':
-					var _v4 = _user$project$App$ChatMsg(
-						_user$project$Chat$JoinLobby(_p13._0)),
-						_v5 = _elm_lang$core$Native_Utils.update(
+					var _v1 = _user$project$App$ChatMsg(
+						_user$project$Chat$JoinLobby(_p5._0)),
+						_v2 = _elm_lang$core$Native_Utils.update(
 						model,
 						{viewType: _user$project$App$Chat});
-					message = _v4;
-					model = _v5;
+					message = _v1;
+					model = _v2;
 					continue update;
-				case 'MyChannelSuccess':
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{soundplayer: true}),
-						_elm_lang$core$Native_List.fromArray(
-							[]));
 				case 'ChatMsg':
-					var _p15 = A3(_user$project$Chat$update, _user$project$App$SendChat, _p13._0, model.chat);
-					var m1 = _p15._0;
-					var c1 = _p15._1;
-					var maybeMsg = _p15._2;
+					var config = A3(_user$project$Chat$Config, _user$project$App$SendChat, _user$project$App$Toast, _user$project$App$SendSound);
+					var _p7 = A3(_user$project$Chat$update, config, _p5._0, model.chat);
+					var m1 = _p7._0;
+					var c1 = _p7._1;
+					var maybeMsg = _p7._2;
 					var res1 = {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -16372,35 +16426,21 @@ var _user$project$App$update = F2(
 							{chat: m1}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$ChatMsg, c1)
 					};
-					return A3(_user$project$App$bind$, res1, _user$project$App$update, maybeMsg);
+					return A3(_user$project$Common$bind$, res1, _user$project$App$update, maybeMsg);
 				case 'SendChat':
-					return A5(_user$project$SocketHelpers$pushSocket, 'new_msg', _user$project$App$lobby, _user$project$App$PhoenixMsg, _p13._0, model);
-				case 'SPMsg':
-					var config = A3(_user$project$SoundPlayer$Config, model.username, _user$project$App$SendSound, _user$project$App$ErrorMsg);
-					var _p16 = A2(_user$project$SoundPlayer$update, config, _p13._0);
-					var c1 = _p16._0;
-					var maybeMsg = _p16._1;
-					return A3(
-						_user$project$App$bind$,
-						{
-							ctor: '_Tuple2',
-							_0: model,
-							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$SPMsg, c1)
-						},
-						_user$project$App$update,
-						maybeMsg);
+					return A5(_user$project$SocketHelpers$pushSocket, 'new_msg', _user$project$App$lobby, _user$project$App$PhoenixMsg, _p5._0, model);
 				case 'SendSound':
 					return A5(
 						_user$project$SocketHelpers$pushSocket,
 						'send_sound',
 						_user$project$App$myRoom(model.username),
 						_user$project$App$PhoenixMsg,
-						_p13._0,
+						_p5._0,
 						model);
 				case 'PhoenixMsg':
-					var _p17 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$update, _p13._0, model.phxSocket);
-					var phxSocket = _p17._0;
-					var phxCmd = _p17._1;
+					var _p8 = A2(_fbonetti$elm_phoenix_socket$Phoenix_Socket$update, _p5._0, model.phxSocket);
+					var phxSocket = _p8._0;
+					var phxCmd = _p8._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -16409,20 +16449,20 @@ var _user$project$App$update = F2(
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$App$PhoenixMsg, phxCmd)
 					};
 				case 'JoinError':
-					var _v6 = _user$project$App$ErrorMsg(
+					var _v3 = _user$project$App$Toast(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_p13._0,
+							_p5._0,
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								': ',
-								_elm_lang$core$Basics$toString(_p13._1)))),
-						_v7 = model;
-					message = _v6;
-					model = _v7;
+								_elm_lang$core$Basics$toString(_p5._1)))),
+						_v4 = model;
+					message = _v3;
+					model = _v4;
 					continue update;
 				case 'Mdl':
-					return A2(_debois$elm_mdl$Material$update, _p13._0, model);
+					return A2(_debois$elm_mdl$Material$update, _p5._0, model);
 				case 'SnackbarMsg':
 					return A2(
 						_debois$elm_mdl$Material_Helpers$map2nd,
@@ -16434,20 +16474,20 @@ var _user$project$App$update = F2(
 									model,
 									{errors: s});
 							},
-							A2(_debois$elm_mdl$Material_Snackbar$update, _p13._0, model.errors)));
-				case 'ErrorMsg':
-					var _p20 = _p13._0;
-					var snack = A5(
+							A2(_debois$elm_mdl$Material_Snackbar$update, _p5._0, model.errors)));
+				case 'Toast':
+					var _p11 = _p5._0;
+					var toast = A5(
 						_debois$elm_mdl$Material_Snackbar$Contents,
-						'Error',
-						_elm_lang$core$Maybe$Just(_p20),
+						_p11,
+						_elm_lang$core$Maybe$Nothing,
 						{ctor: '_Tuple0'},
 						6000,
 						250);
-					var _p18 = A2(_debois$elm_mdl$Material_Snackbar$add, snack, model.errors);
-					var errors = _p18._0;
-					var c1 = _p18._1;
-					var _p19 = A2(_elm_lang$core$Debug$log, 'Adding an error', _p20);
+					var _p9 = A2(_debois$elm_mdl$Material_Snackbar$add, toast, model.errors);
+					var errors = _p9._0;
+					var c1 = _p9._1;
+					var _p10 = A2(_elm_lang$core$Debug$log, '**Toast: ', _p11);
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -16469,14 +16509,17 @@ var _user$project$App$update = F2(
 		}
 	});
 var _user$project$App$viewBody = function (model) {
-	var _p21 = model.viewType;
-	if (_p21.ctor === 'Login') {
+	var _p12 = model.viewType;
+	if (_p12.ctor === 'Login') {
 		return A2(
 			_elm_lang$html$Html_App$map,
 			_user$project$App$LoginMsg,
 			_user$project$Login$view(model.login));
 	} else {
-		return _user$project$App$viewApp(model);
+		return A2(
+			_elm_lang$html$Html_App$map,
+			_user$project$App$ChatMsg,
+			_user$project$Chat$view(model.chat));
 	}
 };
 var _user$project$App$view = function (model) {

@@ -49,26 +49,19 @@ update submitMsg message model =
 view : Model -> Html Msg
 view model =
     div [ id "login" ]
-        [ grid [ ]
-            [ cell
-                [ size Desktop 6
-                , size Phone 12
-                , offset Desktop 3
-                -- , Grid.align Grid.Middle
-                ]
-                [ loginCard model ]
-            ]
-        ]
+        [ loginCard model ]
 
 loginCard model =
     Card.view
         [ e4 ]
         [ Card.title
             [ Color.background <| Color.color Color.Indigo Color.S600 ]
-            [ h2 [] [ text "Login" ] ]
+            [ Options.div
+                [ Color.text Color.white ]
+                [ h2 [] [ text "Login" ] ]
+            ]
         , Card.text []
-            [ text "Enter a username"
-            , Html.form
+            [ Html.form
                 [ onSubmit Submit ]
                 [ Textfield.render Mdl [0] model.mdl
                     [ Textfield.label "Chat name"
