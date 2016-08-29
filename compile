@@ -1,1 +1,5 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+info "Skipping build of Phoenix static assets"
 mix phoenix.digest
