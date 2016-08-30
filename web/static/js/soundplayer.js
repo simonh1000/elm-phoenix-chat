@@ -16,5 +16,7 @@ function url() {
 
 function playSound(s) {
     console.log(s)
-    new Audio("http://192.168.0.10:4000/sounds/"+s+".mp3").play();
+    var l = window.location;
+    // new Audio("http://192.168.0.10:4000/sounds/"+s+".mp3").play();
+    new Audio(l.origin + "/sounds/"+s+".mp3").play();
 }
