@@ -10,13 +10,9 @@ function url() {
     // return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname;
 }
 
-// function playSound() {
-//     new Audio("http://localhost:4000/sounds/guitar.mp3").play();
-// }
-
 function playSound(s) {
-    console.log(s)
     var l = window.location;
-    // new Audio("http://192.168.0.10:4000/sounds/"+s+".mp3").play();
+    console.log(l.origin + "/sounds/"+s+".mp3");
     new Audio(l.origin + "/sounds/"+s+".mp3").play();
+    // new Audio("http://192.168.0.10:4000/sounds/"+s+".mp3").play();
 }
