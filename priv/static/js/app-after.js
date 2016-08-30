@@ -1334,7 +1334,7 @@ elm.ports.player.subscribe(playSound);
 
 function url() {
     var l = window.location;
-    return (l.protocol === "https:" ? "ws://" : "ws://") + l.host;
+    return (l.protocol === "https:" ? "wss://" : "ws://") + l.host;
     // return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname;
 }
 
