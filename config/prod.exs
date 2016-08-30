@@ -13,8 +13,10 @@ use Mix.Config
 # which you typically run after static files are built.
 config :epchat, EPChat.Endpoint,
   http: [port: {:system, "PORT"}],
-  url: [host: "example.com", port: 80],
+  url: [scheme: "https", host: "brussels-chat.herokuapp.com", port: 443],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/manifest.json"
+
 
 # Do not print debug messages in production
 config :logger, level: :info
